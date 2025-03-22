@@ -18,102 +18,128 @@ mcp = FastMCP("mem0-mcp")
 mem0_client = MemoryClient()
 DEFAULT_USER_ID = "cursor_mcp"
 CUSTOM_INSTRUCTIONS = """
-Extract the Following Information:  
+Interpret and Extract Project Management Information:
 
-- Code Snippets: Save the actual code for future reference.  
-- Explanation: Document a clear description of what the code does and how it works.
-- Related Technical Details: Include information about the programming language, dependencies, and system specifications.  
-- Key Features: Highlight the main functionalities and important aspects of the snippet.
+# Primary Extraction Categories
+- Project Status: Extract current progress state, completion levels, and overall status.
+- Task Management: Identify tasks with their priorities, dependencies, statuses, and deadlines.
+- Decision Records: Document decisions, their rationale, implications, and related constraints.
+- Resource Allocation: Capture information about resource usage, assignments, and availability.
+- Risk Assessment: Identify potential risks, their impact ratings, and mitigation strategies.
+- Technical Artifacts: Extract technical specifications, dependencies, and implementation notes.
+
+# Metadata Extraction (when available)
+- Temporal Context: Extract timestamps, durations, deadlines, and sequence information.
+- Project Context: Identify project names, phases, domains, and scope indicators.
+- Relationship Mapping: Determine relationships between extracted elements (dependencies, etc.).
+
+# Interpretation Guidelines
+- For structured input (JavaScript/JSON objects): Preserve the structural hierarchy while enriching with contextual metadata.
+- For code-structured representations: Analyze both the structural patterns and the semantic content.
+- For mixed-format input: Prioritize semantic content while acknowledging structural hints.
+
+# Output Structure Formation
+- Maintain consistent categorization across multiple records.
+- Preserve original identifiers and reference keys for continuity.
+- Generate contextually appropriate metadata when implicit in the source.
+- Structure output to facilitate future retrieval, updating, and relationship mapping.
 """
 mem0_client.update_project(custom_instructions=CUSTOM_INSTRUCTIONS)
 
 @mcp.tool(
-    description="""Add a new coding preference to mem0. This tool stores code snippets, implementation details,
-    and coding patterns for future reference. Store every code snippet. When storing code, you should include:
-    - Complete code with all necessary imports and dependencies
-    - Language/framework version information (e.g., "Python 3.9", "React 18")
-    - Full implementation context and any required setup/configuration
-    - Detailed comments explaining the logic, especially for complex sections
-    - Example usage or test cases demonstrating the code
-    - Any known limitations, edge cases, or performance considerations
-    - Related patterns or alternative approaches
-    - Links to relevant documentation or resources
-    - Environment setup requirements (if applicable)
-    - Error handling and debugging tips
-    The preference will be indexed for semantic search and can be retrieved later using natural language queries."""
+    description="""Add new project management information to mem0. This tool stores project status, task management, 
+    decision records, and other project-related information for future reference. When adding information, include:
+    - Project Status: Progress state, completion levels, and overall status
+    - Task Management: Tasks with priorities, dependencies, and statuses
+    - Decision Records: Decisions with rationale and implications
+    - Resource Allocation: Team, infrastructure, and budget information
+    - Risk Assessment: Potential risks and mitigation strategies
+    - Technical Artifacts: System architecture, technologies, and standards
+    Information is typically structured as JavaScript objects with appropriate metadata (project, timestamp),
+    and will be indexed for semantic search and retrieval using natural language queries."""
 )
-async def add_coding_preference(text: str) -> str:
-    """Add a new coding preference to mem0.
-
-    This tool is designed to store code snippets, implementation patterns, and programming knowledge.
-    When storing code, it's recommended to include:
-    - Complete code with imports and dependencies
-    - Language/framework information
-    - Setup instructions if needed
-    - Documentation and comments
-    - Example usage
+async def add_project_memory(text: str) -> str:
+    """Add new project management information to mem0.
+    
+    This tool is designed to store structured project information including:
+    - Project status updates
+    - Task management details
+    - Decision records with rationale
+    - Resource allocation information
+    - Risk assessments
+    - Technical specifications
+    
+    Information should be formatted as JavaScript objects with appropriate
+    metadata comments for project identification and timestamps.
 
     Args:
-        text: The content to store in memory, including code, documentation, and context
+        text: The project management information to store, formatted as JavaScript objects
     """
     try:
         messages = [{"role": "user", "content": text}]
         mem0_client.add(messages, user_id=DEFAULT_USER_ID, output_format="v1.1")
-        return f"Successfully added preference: {text}"
+        return f"Successfully added project information: {text}"
     except Exception as e:
-        return f"Error adding preference: {str(e)}"
+        return f"Error adding project information: {str(e)}"
 
 @mcp.tool(
-    description="""Retrieve all stored coding preferences for the default user. Call this tool when you need 
-    complete context of all previously stored preferences. This is useful when:
-    - You need to analyze all available code patterns
-    - You want to check all stored implementation examples
-    - You need to review the full history of stored solutions
-    - You want to ensure no relevant information is missed
+    description="""Retrieve all stored project management information for the default user. Call this tool when you need 
+    comprehensive context of previously stored project data. This is useful when:
+    - You need to review the overall project status
+    - You want to check all tasks and their current statuses
+    - You need to review previous decisions and their rationale
+    - You want to ensure no relevant project information is missed
     Returns a comprehensive list of:
-    - Code snippets and implementation patterns
-    - Programming knowledge and best practices
-    - Technical documentation and examples
-    - Setup and configuration guides
+    - Project status information
+    - Task management details
+    - Decision records
+    - Resource allocation data
+    - Risk assessments
+    - Technical specifications
     Results are returned in JSON format with metadata."""
 )
-async def get_all_coding_preferences() -> str:
-    """Get all coding preferences for the default user.
+async def get_all_project_memories() -> str:
+    """Get all project management information for the default user.
 
-    Returns a JSON formatted list of all stored preferences, including:
-    - Code implementations and patterns
-    - Technical documentation
-    - Programming best practices
-    - Setup guides and examples
-    Each preference includes metadata about when it was created and its content type.
+    Returns a JSON formatted list of all stored project data, including:
+    - Project status information
+    - Task management details
+    - Decision records
+    - Resource allocation data
+    - Risk assessments
+    - Technical specifications
+    Each entry includes metadata about when it was created and its content type.
     """
     try:
         memories = mem0_client.get_all(user_id=DEFAULT_USER_ID, page=1, page_size=50)
         flattened_memories = [memory["memory"] for memory in memories["results"]]
         return json.dumps(flattened_memories, indent=2)
     except Exception as e:
-        return f"Error getting preferences: {str(e)}"
+        return f"Error retrieving project information: {str(e)}"
 
 @mcp.tool(
-    description="""Search through stored coding preferences using semantic search. This tool should be called 
-    for EVERY user query to find relevant code and implementation details. It helps find:
-    - Specific code implementations or patterns
-    - Solutions to programming problems
-    - Best practices and coding standards
-    - Setup and configuration guides
-    - Technical documentation and examples
+    description="""Search through stored project management information using semantic search. This tool should be called 
+    for user queries to find relevant project data. It helps find:
+    - Project status information
+    - Task management details
+    - Decision records and their rationale
+    - Resource allocation data
+    - Risk assessments and mitigation strategies
+    - Technical specifications and architecture details
     The search uses natural language understanding to find relevant matches, so you can
-    describe what you're looking for in plain English. Always search the preferences before 
+    describe what you're looking for in plain English. Always search the project memory before 
     providing answers to ensure you leverage existing knowledge."""
 )
-async def search_coding_preferences(query: str) -> str:
-    """Search coding preferences using semantic search.
+async def search_project_memories(query: str) -> str:
+    """Search project management information using semantic search.
 
     The search is powered by natural language understanding, allowing you to find:
-    - Code implementations and patterns
-    - Programming solutions and techniques
-    - Technical documentation and guides
-    - Best practices and standards
+    - Project status updates
+    - Task management information
+    - Decision records
+    - Resource allocation details
+    - Risk assessments
+    - Technical documentation
     Results are ranked by relevance to your query.
 
     Args:
@@ -125,7 +151,7 @@ async def search_coding_preferences(query: str) -> str:
         flattened_memories = [memory["memory"] for memory in memories["results"]]
         return json.dumps(flattened_memories, indent=2)
     except Exception as e:
-        return f"Error searching preferences: {str(e)}"
+        return f"Error searching project information: {str(e)}"
 
 def create_starlette_app(mcp_server: Server, *, debug: bool = False) -> Starlette:
     """Create a Starlette application that can server the provied mcp server with SSE."""
