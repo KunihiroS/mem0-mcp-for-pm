@@ -1,4 +1,4 @@
-# mem0 MCP Server
+# mem0 MCP Server for project management
 
 mem0 MCP Server is a bridge between MCP Host applications and the mem0 cloud service, providing memory capabilities for MCP Host AI.
 
