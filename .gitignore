@@ -1,1 +1,10 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Environment variables
 .env
+
+# Egg info
+mem0_mcp.egg-info/
