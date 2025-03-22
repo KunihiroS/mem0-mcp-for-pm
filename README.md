@@ -1,6 +1,11 @@
 # mem0 MCP Server
 
-mem0 MCP Server is a bridge between MCP Host applications and the mem0 cloud service, providing project management memory capabilities.
+mem0 MCP Server is a bridge between MCP Host applications and the mem0 cloud service, providing memory capabilities for MCP Host AI.
+
+This is forked in order to change the scope from coding to project management.
+The forked deals more higher level context related with project management topics.
+
+Additionally, this forked experimentally integrate cording format into high level context like human protocol.
 
 ## Features
 
