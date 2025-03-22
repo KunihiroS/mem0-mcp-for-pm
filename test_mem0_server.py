@@ -1,4 +1,6 @@
-# improved_test_mcp_server.py
+# test_mcp_server.py
+# **This is a sample test script for the MCP server, it is not tested and may not work as expected.**
+
 import requests
 import json
 import time
