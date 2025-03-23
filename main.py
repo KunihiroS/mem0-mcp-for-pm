@@ -368,6 +368,87 @@ async def delete_project_memory(memory_id: str) -> str:
         print(f"Traceback: {traceback.format_exc()}")
         
         return f"Error deleting project memory: {str(e)}"
+    
+# Delete multi posts at once, not tested yet.
+@mcp.tool(
+    description="""Delete multiple project memories based on specified filters.
+
+    This tool uses the delete_all method to remove multiple memories based on filter criteria.
+    IMPORTANT: Use this tool with caution as it will delete ALL memories that match the specified filters.
+    If no filters are specified, it could potentially delete ALL memories.
+
+    Args:
+        user_id (str, optional): Filter memories by user ID.
+        agent_id (str, optional): Filter memories by agent ID.
+        app_id (str, optional): Filter memories by app ID.
+        run_id (str, optional): Filter memories by run ID.
+        metadata (dict, optional): Filter memories by metadata.
+        org_id (str, optional): Filter memories by organization ID.
+        project_id (str, optional): Filter memories by project ID.
+
+    Returns:
+        str: A success message if the memories were deleted successfully, or an error message if there was an issue.
+    """
+)
+async def delete_all_project_memories(
+    user_id: str = None,
+    agent_id: str = None,
+    app_id: str = None,
+    run_id: str = None,
+    metadata: dict = None,
+    org_id: str = None,
+    project_id: str = None
+) -> str:
+    """Delete multiple project memories based on specified filters.
+    
+    This tool removes multiple memories from the mem0 database based on provided filters.
+    If no filters are specified, it could potentially delete ALL memories, so use with caution.
+    
+    Args:
+        user_id (str, optional): Filter memories by user ID.
+        agent_id (str, optional): Filter memories by agent ID.
+        app_id (str, optional): Filter memories by app ID.
+        run_id (str, optional): Filter memories by run ID.
+        metadata (dict, optional): Filter memories by metadata.
+        org_id (str, optional): Filter memories by organization ID.
+        project_id (str, optional): Filter memories by project ID.
+        
+    Returns:
+        str: A success message if the memories were deleted successfully, or an error message if there was an issue.
+    """
+    try:
+        # フィルタパラメータの辞書を構築（Noneでないパラメータのみ）
+        filter_params = {}
+        if user_id is not None:
+            filter_params['user_id'] = user_id
+        if agent_id is not None:
+            filter_params['agent_id'] = agent_id
+        if app_id is not None:
+            filter_params['app_id'] = app_id
+        if run_id is not None:
+            filter_params['run_id'] = run_id
+        if metadata is not None:
+            filter_params['metadata'] = metadata
+        if org_id is not None:
+            filter_params['org_id'] = org_id
+        if project_id is not None:
+            filter_params['project_id'] = project_id
+            
+        # フィルタ条件の説明を生成（ログとレスポンス用）
+        filter_description = ", ".join([f"{k}={v}" for k, v in filter_params.items()]) if filter_params else "no filters (ALL memories)"
+        
+        # APIクライアントを使用して削除を実行
+        mem0_client.delete_all(**filter_params)
+        
+        return f"Successfully deleted project memories with filters: {filter_description}"
+    except Exception as e:
+        print(f"Error in delete_all_project_memories: {e}")
+        print(f"Error type: {type(e).__name__}")
+        print(f"Error details: {getattr(e, '__dict__', {})}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        
+        return f"Error deleting project memories: {str(e)}"
 
 def create_starlette_app(mcp_server: Server, *, debug: bool = False) -> Starlette:
     """Create a Starlette application that can server the provied mcp server with SSE."""
