@@ -231,6 +231,71 @@ async def search_project_memories(query: str, filters: dict = None) -> List[Dict
         return {"error": f"Error searching project information: {str(e)}"}
 
 @mcp.tool(
+    description="""Update an existing project memory with new content.
+
+    This tool updates a memory identified by its ID. Ideal for smaller changes
+    where maintaining the memory's ID and creation timestamp is important.
+
+    Guidelines for choosing update vs. delete+create:
+    - Use UPDATE when: making minor changes, preserving references is critical
+    - Consider DELETE+CREATE when: completely restructuring content
+    - When unsure: start with update, and if structural issues occur, fall back to delete+create
+
+    Args:
+        memory_id: The unique identifier of the memory to update
+        text: The new content for the memory
+
+    Returns:
+        dict: The updated memory object with complete metadata
+    
+    Example usage:
+        ```
+        # 1. Search for memories to update
+        memories = await search_project_memories("project status")
+        
+        # 2. Extract memory IDs
+        memory_ids = await extract_memory_ids(memories)
+        
+        # 3. Get the first memory's content
+        if memories and isinstance(memories, list) and len(memories) > 0:
+            original_content = memories[0].get("memory", "")
+            
+            # 4. Update only specific information while preserving structure
+            updated_content = original_content.replace(
+                "completionLevel: 0.5", 
+                "completionLevel: 0.7"
+            )
+            
+            # 5. Update the memory
+            result = await update_project_memory(
+                memory_id=memory_ids[0],
+                text=updated_content
+            )
+        ```
+    """
+)
+async def update_project_memory(memory_id: str, text: str) -> Dict:
+    """Update an existing project memory with new content.
+    
+    Args:
+        memory_id: The unique identifier of the memory to update
+        text: The new content for the memory
+        
+    Returns:
+        dict: The updated memory object with all metadata
+    """
+    try:
+        updated_memory = mem0_client.update(memory_id, text)
+        return updated_memory
+    except Exception as e:
+        print(f"Error in update_project_memory: {e}")
+        print(f"Error type: {type(e).__name__}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        
+        return {"error": f"Error updating project memory: {str(e)}"}
+
+@mcp.tool(
     description="""Delete a specific project memory from mem0.
 
     This tool removes a memory by its ID.
