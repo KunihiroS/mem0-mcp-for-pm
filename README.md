@@ -137,234 +137,269 @@ In order to make mem0 working as fitting to project management purpose, this for
 
 ---
 
-# mem0 Guide for Effective Project Memory (Revised)
+# mem0 Guide for Effective Project Memory (Enhanced)
 
-**You can manage your memory by using the mem0 MCP Server**
+This guide outlines strategies and templates for effectively managing project information using mem0. The aim is to improve searchability and reusability of project data through structured templates and metadata management.
 
----
+## Information Structure and Templates
 
-## Important
+mem0 can effectively manage the following types of information. Using structured templates improves searchability and reusability. Note that the templates provided are examples and should be adapted to fit specific project needs.
 
-The mem0 server extracts the following information from your input. To ensure effective extraction, use structured data formats (e.g., JavaScript objects, JSON, or YAML).
+### 1. Project Status Management
 
-- **Project Status**: Current progress, completion levels, and overall status.
-- **Task Management**: Tasks with priorities, dependencies, statuses, and deadlines.
-- **Decision Records**: Decisions, their rationale, implications, and constraints.
-- **Resource Allocation**: Resource usage, assignments, and availability.
-- **Risk Assessment**: Potential risks, impact ratings, and mitigation strategies.
-- **Technical Artifacts**: Technical specifications, dependencies, and implementation notes.
-
----
-
-## Memory Structure and Templates
-
-Use the following templates to structure memory entries. Each template has a clear purpose, with mandatory and optional fields defined for flexibility.
-
-### 1. Project Status
-
-**Purpose**: Track overall project progress and current focus.  
-**Mandatory Fields**: `name`, `purpose`  
-**Optional Fields**: `version`, `phase`, `completionLevel`, `milestones`, `currentFocus`
-
+**Template**:
 ```javascript
-// [PROJECT: project-name] [TIMESTAMP: yyyy-MM-ddTHH:mm:ss+09:00]
+// [PROJECT: project-name] [TIMESTAMP: yyyy-MM-ddTHH:mm:ss+09:00] [TYPE: Project Status]
 const projectStatus = {
   overview: {
-    name: "Project Name",  // Mandatory
-    purpose: "Brief description",  // Mandatory
-    version: "1.2.0",  // Optional
-    phase: "development"  // Optional
+    name: "Project Name",      // Required
+    purpose: "Project Purpose", // Required
+    version: "1.2.0",          // Optional
+    phase: "development"       // Optional
   },
   progress: {
-    completionLevel: 0.65,  // Optional
-    milestones: [  // Optional
-      { name: "Planning", status: "completed", date: "2025-02-15" },
-      { name: "Development", status: "in-progress", progress: 0.70 }
+    completionLevel: 0.65,    // Completion rate (value between 0 and 1)
+    milestones: [
+      { name: "Planning Phase", status: "completed", date: "2025-02-15" },
+      { name: "Development Phase", status: "in-progress", progress: 0.70 }
     ]
   },
-  currentFocus: [  // Optional
-    "Feature implementation for module X",
-    "Performance optimization of component Y"
-  ]
+  currentFocus: ["Implementing Feature X", "Optimizing Component Y"],
+  risks: ["Concerns about API stability", "Resource shortage"]
 };
 ```
 
-**Python Example**:
-```python
-# [PROJECT: project-name] [TIMESTAMP: yyyy-MM-ddTHH:mm:ss+09:00]
-project_status = {
-  "overview": {
-    "name": "Project Name",  # Mandatory
-    "purpose": "Brief description",  # Mandatory
-    "version": "1.2.0",  # Optional
-    "phase": "development"  # Optional
-  }
-}
-```
-
----
-
 ### 2. Task Management
 
-**Purpose**: Manage task priorities, statuses, and dependencies.  
-**Mandatory Fields**: `description`, `status`  
-**Optional Fields**: `deadline`, `assignee`, `dependencies`
-
+**Template**:
 ```javascript
-// [PROJECT: project-name] [TIMESTAMP: yyyy-MM-ddTHH:mm:ss+09:00]
+// [PROJECT: project-name] [TIMESTAMP: yyyy-MM-ddTHH:mm:ss+09:00] [TYPE: Task Management]
 const taskManagement = {
   highPriority: [
     {
-      description: "Implement feature X",  // Mandatory
-      status: "in-progress",  // Mandatory
-      deadline: "2025-03-15",  // Optional
-      assignee: "Team A",  // Optional
-      dependencies: "Component Y ready"  // Optional, use string
+      description: "Implement Feature X",     // Required
+      status: "in-progress",                 // Required
+      deadline: "2025-03-15",                // Optional
+      assignee: "Team A",                    // Optional
+      dependencies: "Component Y"            // Optional
     }
   ],
   mediumPriority: [],
   completedTasks: [
     {
-      description: "Setup development environment",  // Mandatory
-      status: "completed"  // Mandatory
+      description: "Setup Development Environment",
+      status: "completed"
     }
   ]
 };
 ```
 
----
+### 3. Meeting Summary
 
-## Memory Update Guidelines
-
-Follow these guidelines when updating memory.
-
-### Metadata Enrichment
-
-**Instruction**: Always include project name and timestamp. Add additional context (e.g., phase, sprint) as needed.  
-**Example**:
+**Template**:
 ```javascript
-// [PROJECT: inventory-system] [TIMESTAMP: 2025-03-10T14:30:00+09:00] [PHASE: Development] [SPRINT: 3]
-```
-
----
-
-### Relationship Mapping
-
-**Instruction**: Explicitly state relationships between items using strings. mem0 extracts relationship information as searchable keywords. For example, searching for 'relatedTo User Authentication' will return items that have 'User Authentication' in their `relatedTo` field.  
-**Example**:
-```javascript
-const featureImplementation = {
-  name: "Shopping Cart API",
-  relatedTo: "User Authentication, Product Catalog",
-  enables: "Checkout Process, Order Management",
-  blockedBy: "Payment Gateway Integration"
-};
-```
-
----
-
-### Temporal Context
-
-**Instruction**: Use ISO 8601 format for dates and explicitly state related events.  
-**Example**:
-```javascript
-const milestone = {
-  name: "Beta Release",
-  plannedDate: "2025-04-15T00:00:00+09:00",
-  expectedDuration: "2 weeks",
-  prerequisites: "Feature X, Feature Y",
-  subsequentEvents: "User Testing, Feedback Collection"
-};
-```
-
----
-
-### Structure for Searchability
-
-**Instruction**: Use consistent terminology, include keywords in property names, and use descriptive variable names.  
-**Example**:
-```javascript
-const taskManagement = {
-  highPriorityTasks: [
-    { description: "Implement login feature", status: "in-progress" }
+// [PROJECT: project-name] [TIMESTAMP: yyyy-MM-ddTHH:mm:ss+09:00] [TYPE: Meeting Summary]
+const meetingMinutes = {
+  title: "Weekly Progress Meeting",
+  date: "2025-03-23",
+  attendees: [
+    { department: "Development", members: ["Sato", "Suzuki"] },
+    { department: "Design", members: ["Tanaka"] }
+  ],
+  topics: ["Progress Report", "Risk Management", "Next Week's Plan"],
+  decisions: [
+    "Approve additional resource allocation",
+    "Delay release date by one week"
+  ],
+  actionItems: [
+    { description: "Procedure for adding resources", assignee: "Sato", dueDate: "2025-03-25" },
+    { description: "Revise test plan", assignee: "Suzuki", dueDate: "2025-03-24" }
   ]
 };
 ```
 
----
+## Effective Information Management Techniques
 
-## Enhanced Memory Access Methods
+### 1. Context Management (run_id)
 
-Use `search_project_memories` with queries like the following examples.
+Using mem0's `run_id` parameter, you can logically group related information. This helps maintain specific conversation flows or project contexts.
 
-**Query Examples**:
+**Recommended Format**:
+```
+project:project-name:category:subcategory
+```
+
+**Usage Example**:
 ```javascript
-search_project_memories("projectStatus [PROJECT: current-project]");  // Search project status
-search_project_memories("taskManagement highPriority");  // Search high-priority tasks
-search_project_memories("decisionRecord database");  // Search database decisions
-search_project_memories("riskAssessment high");  // Search high risks
-search_project_memories("milestone Beta Release");  // Search for a specific milestone
+// Managing information related to a specific feature
+add_project_memory(
+  "// [PROJECT: Member System] [TYPE: Technical Specification]\nconst authSpec = {...};",
+  run_id="project:member-system:feature:authentication",
+  metadata={"type": "specification"}
+);
+
+// Adding a task for the same feature
+add_project_memory(
+  "// [PROJECT: Member System] [TYPE: Task Management]\nconst authTasks = {...};",
+  run_id="project:member-system:feature:authentication",
+  metadata={"type": "task"}
+);
+
+// Searching for related information
+search_project_memories("authentication", {
+  "run_id": "project:member-system:feature:authentication"
+});
 ```
 
-**Query Creation Instructions**:
-- Use category names (e.g., `projectStatus`) to narrow the search.
-- Include specific keywords or phrases.
-- Use project identifiers and timestamps for context.
+### 2. Effective Use of Metadata
 
----
-
-## Basic Principles
-
-### Thorough Project Identification
-
-**Instruction**: Include a project identifier in every memory entry.  
-**Example**:
+Using metadata can enhance the searchability of information. We recommend using the following schema:
 ```javascript
-// [PROJECT: inventory-system]
+{
+  "type": "meeting|task|decision|status|risk", // Type of information
+  "priority": "high|medium|low",               // Priority
+  "tags": ["frontend", "backend", "design"],   // Related tags
+  "status": "pending|in-progress|completed"    // Status
+}
 ```
 
-### Integrated Chronological Management
-
-**Instruction**: Attach an accurate timestamp to every entry.  
-**Example**:
+**Usage Example**:
 ```javascript
-// [TIMESTAMP: 2025-03-09T00:46:36+09:00]
+// Registering a high-priority task
+add_project_memory(
+  "// [PROJECT: Member System] [TYPE: Task Management]\nconst task = {...};",
+  metadata={
+    "type": "task",
+    "priority": "high",
+    "tags": ["frontend", "authentication"]
+  }
+);
+
+// Searching for tasks with a specific tag
+search_project_memories("task", {
+  "metadata": {
+    "tags": ["frontend"]
+  }
+});
 ```
 
-### User-Driven Memory Operations
+### 3. Information Lifecycle Management
 
-**Instruction**: Interpret natural language and follow user instructions.  
-**Examples**:
-- "Update memory" → Use `add_project_memory` to update.
-- "Record progress" → Save current progress.
-- "Tell me the project status" → Summarize project status.
+Using the `immutable` and `expiration_date` parameters, you can manage the lifecycle of information.
 
----
-
-## Writing Memories
-
-Use `add_project_memory` to add information. Other tools (e.g., `search_project_memories`, `get_all_project_memories`) can be used as needed.
-
-**JavaScript Example**:
+**Usage Example**:
 ```javascript
-add_project_memory("// [PROJECT: current-project] [TIMESTAMP: 2025-03-09T00:46:36+09:00]\nconst projectStatus = {\n  overview: { name: 'Project Name', purpose: 'Brief description' }\n};");
+// Recording an immutable decision
+add_project_memory(
+  "// [PROJECT: Member System] [TYPE: Decision Record]\nconst decision = {...};",
+  immutable=True,  // Set as immutable
+  metadata={"type": "decision"}
+);
+
+// Information with an expiration date
+add_project_memory(
+  "// [PROJECT: Member System] [TYPE: Meeting Summary]\nconst meeting = {...};",
+  expiration_date="2025-06-30",  // Expires on this date
+  metadata={"type": "meeting"}
+);
 ```
 
-**Python Example**:
-```python
-add_project_memory("# [PROJECT: current-project] [TIMESTAMP: 2025-03-09T00:46:36+09:00]\nproject_status = {'overview': {'name': 'Project Name', 'purpose': 'Brief description'}}")
-```
+## Practical Usage Patterns
 
-**Additional Tool Examples**:
+### 1. Sprint Management Example
 ```javascript
-get_all_project_memories();  // Retrieve all extracted project information
-search_project_memories("decisionRecord");  // Find all decision records
+// Registering the sprint plan at the start
+add_project_memory(
+  "// [PROJECT: Member System] [TIMESTAMP: 2025-05-01T10:00:00+09:00] [TYPE: Project Status]\n" +
+  "const sprintPlan = {\n" +
+  "  sprint: \"Sprint-2025-05\",\n" +
+  "  duration: \"2 weeks\",\n" +
+  "  goals: [\"Implement authentication feature\", \"Improve UI\"],\n" +
+  "  tasks: [\n" +
+  "    { description: \"Implement login screen\", assignee: \"Tanaka\", estimate: \"3 days\" },\n" +
+  "    { description: \"API integration\", assignee: \"Sato\", estimate: \"2 days\" }\n" +
+  "  ]\n" +
+  "};",
+  run_id="project:member-system:sprint:2025-05",
+  metadata={"type": "status", "tags": ["sprint-planning"]}
+);
+
+// Mid-sprint progress report
+add_project_memory(
+  "// [PROJECT: Member System] [TIMESTAMP: 2025-05-08T15:00:00+09:00] [TYPE: Project Status]\n" +
+  "const progress = {\n" +
+  "  sprint: \"Sprint-2025-05\",\n" +
+  "  completionLevel: 0.4,\n" +
+  "  status: [\n" +
+  "    { task: \"Implement login screen\", progress: 0.7, status: \"in-progress\" },\n" +
+  "    { task: \"API integration\", progress: 0.2, status: \"in-progress\" }\n" +
+  "  ],\n" +
+  "  blockers: [\"Change in API response specification\"]\n" +
+  "};",
+  run_id="project:member-system:sprint:2025-05",
+  metadata={"type": "status", "tags": ["sprint-progress"]}
+);
 ```
 
----
+### 2. Risk Management Example
+```javascript
+// Registering a risk
+add_project_memory(
+  "// [PROJECT: Member System] [TIMESTAMP: 2025-05-03T11:00:00+09:00] [TYPE: Risk Assessment]\n" +
+  "const risk = {\n" +
+  "  description: \"Concerns about external API stability\",\n" +
+  "  impact: \"High\",\n" +
+  "  probability: \"Medium\",\n" +
+  "  mitigation: \"Implement fallback mechanism\",\n" +
+  "  owner: \"Development Lead\"\n" +
+  "};",
+  run_id="project:member-system:risk:api-stability",
+  metadata={"type": "risk", "priority": "high"}
+);
 
-## Important Notes
+// Updating the risk status
+add_project_memory(
+  "// [PROJECT: Member System] [TIMESTAMP: 2025-05-10T16:30:00+09:00] [TYPE: Risk Assessment]\n" +
+  "const riskUpdate = {\n" +
+  "  description: \"Concerns about external API stability\",\n" +
+  "  status: \"Resolved\",\n" +
+  "  resolution: \"Fallback mechanism implementation completed\"\n" +
+  "};",
+  run_id="project:member-system:risk:api-stability",
+  metadata={"type": "risk", "priority": "medium"}
+);
+```
 
-- **Metadata**: Always include project name (e.g., `[PROJECT: project-name]`) and timestamp (e.g., `[TIMESTAMP: yyyy-MM-ddTHH:mm:ss+09:00]`).
-- **Data Format**: Use structured formats (e.g., JavaScript objects, JSON, YAML).
-- **`get_all_project_memories` Output**: Returns extracted information (e.g., project name, task descriptions, statuses), not raw input.
+## Important Points
+
+- **Standard Metadata**: Always include the project name and timestamp.
+- **Data Format**: Use structured data (JavaScript objects, JSON, YAML).
+- **Context Management**: Use `run_id` hierarchically to maintain information relevance.
+- **Search Efficiency**: Consistent metadata and structure improve search efficiency.
+
+## 4. Implementation Strategy
+
+To implement the above improvements, we recommend the following steps:
+
+1. **Enhance the `add_project_memory` Method**:
+   - Update documentation strings: Improve usage examples and parameter descriptions.
+   - Error handling: Provide more detailed error information.
+   - Response format: Explicitly state the parameters used.
+
+2. **Update Custom Instructions**:
+   - Enrich template examples.
+   - Clarify recommended usage of `run_id` (introduce hierarchical structure).
+   - Standardize metadata schema.
+   - Provide practical usage examples.
+
+These improvements will enhance the usability and efficiency of information management while maintaining compatibility with existing APIs.
+
+## 5. Summary
+
+The proposed improvements provide value in the following ways while maintaining compatibility with existing mem0 MCP server functions:
+
+1. **Enhanced Structured Information Management**: Templates and standardized metadata promote consistent information structure.
+2. **Improved Context Management**: Hierarchical use of `run_id` makes managing related information easier.
+3. **Improved Usability**: Detailed documentation and practical examples reduce the learning curve.
+
+These enhancements will further increase the effectiveness of the mem0 MCP server as a project management tool.
