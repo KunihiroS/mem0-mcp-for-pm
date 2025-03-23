@@ -47,33 +47,72 @@ Interpret and Extract Project Management Information:
 mem0_client.update_project(custom_instructions=CUSTOM_INSTRUCTIONS)
 
 @mcp.tool(
-    description="""Add new project management information to mem0. This tool stores project status, task management, 
-    decision records, and other project-related information for future reference. When adding information, include:
-    - Project Status: Progress state, completion levels, and overall status
-    - Task Management: Tasks with priorities, dependencies, and statuses
-    - Decision Records: Decisions with rationale and implications
-    - Resource Allocation: Team, infrastructure, and budget information
-    - Risk Assessment: Potential risks and mitigation strategies
-    - Technical Artifacts: System architecture, technologies, and standards
-    Information is typically structured as JavaScript objects with appropriate metadata (project, timestamp),
-    and will be indexed for semantic search and retrieval using natural language queries."""
+    description="""Add structured project information to mem0.
+
+    This tool is designed to store the following types of project information:
+    - Project Status
+    - Task Management
+    - Decision Records
+    - Resource Allocation
+    - Risk Assessment
+    - Technical Artifacts
+
+    Information should be formatted according to the templates defined in Memory Structure and Templates, using structured data formats (JavaScript objects, JSON, YAML), and include project name and timestamp as metadata.
+
+    Relationships between items should be described using keys such as 'relatedTo', 'enables', 'blockedBy', etc., in string format.
+    Example:
+    ```javascript
+    const featureImplementation = {
+      project: "project-name",
+      timestamp: "2025-03-23T10:58:29+09:00",
+      name: "Shopping Cart API",
+      relatedTo: "User Authentication, Product Catalog",
+      enables: "Checkout Process, Order Management",
+      blockedBy: "Payment Gateway Integration"
+    };
+    ```
+
+    Metadata example:
+    ```javascript
+    // [PROJECT: inventory-system] [TIMESTAMP: 2025-03-10T14:30:00+09:00]
+    ```
+
+    Using this tool allows for effective management of project progress and decision history."""
 )
 async def add_project_memory(text: str) -> str:
     """Add new project management information to mem0.
-    
+
     This tool is designed to store structured project information including:
-    - Project status updates
-    - Task management details
-    - Decision records with rationale
-    - Resource allocation information
-    - Risk assessments
-    - Technical specifications
-    
-    Information should be formatted as JavaScript objects with appropriate
-    metadata comments for project identification and timestamps.
+    - Project Status
+    - Task Management
+    - Decision Records
+    - Resource Allocation
+    - Risk Assessment
+    - Technical Artifacts
+
+    Information should be formatted according to the templates defined in Memory Structure and Templates, using structured data formats (JavaScript objects, JSON, YAML), and include project name and timestamp as metadata.
+
+    Relationships between items should be described using keys such as 'relatedTo', 'enables', 'blockedBy', etc., in string format.
 
     Args:
-        text: The project management information to store, formatted as JavaScript objects
+        text: The project information to add to mem0. It should be formatted according to the templates defined in Memory Structure and Templates, using structured data formats (JavaScript objects, JSON, YAML), and include project name and timestamp as metadata. Metadata should be added at the top level of the object using the `project` key and `timestamp` key.
+
+        Example:
+        ```javascript
+        // [PROJECT: project-name] [TIMESTAMP: 2025-03-23T10:58:29+09:00]
+        const projectStatus = {
+          project: "project-name",
+          timestamp: "2025-03-23T10:58:29+09:00",
+          overview: {
+            name: "Project Name",
+            purpose: "Brief description"
+          },
+          // ...
+        };
+        ```
+
+    Returns:
+        str: A success message if the project information was added successfully, or an error message if there was an issue.
     """
     try:
         messages = [{"role": "user", "content": text}]

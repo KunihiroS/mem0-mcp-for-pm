@@ -120,7 +120,7 @@ Hey, can you get all memories on mem0?
 
 ## Technical details
 
-The uniqueness of this forked is the structured format between MCP Host and mem0 is expected in Javascript object format.
+The uniqueness of this forked is the structured format between MCP Host and mem0 is expected in coding format like Javascript object.
 Make sure you set the custom instruction to be able to handle better.
 
 ## Custom instruction
