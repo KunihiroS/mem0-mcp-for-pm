@@ -334,6 +334,41 @@ async def search_project_memories(query: str, filters: dict = None) -> str:
         print(f"Error args: {e.args}")
         return f"Error searching project information: {str(e)}"
 
+@mcp.tool(
+    description="""Delete a specific project memory from mem0.
+
+    This tool removes a memory by its ID.
+
+    Args:
+        memory_id: The unique identifier of the memory to delete.
+
+    Returns:
+        str: A success message if the memory was deleted successfully, or an error message if there was an issue.
+    """
+)
+async def delete_project_memory(memory_id: str) -> str:
+    """Delete a specific project memory from mem0.
+    
+    This tool removes the specified memory from the mem0 database.
+    
+    Args:
+        memory_id: The unique identifier of the memory to delete.
+        
+    Returns:
+        str: A success message if the memory was deleted successfully, or an error message if there was an issue.
+    """
+    try:
+        mem0_client.delete(memory_id=memory_id)
+        return f"Successfully deleted project memory with ID: {memory_id}"
+    except Exception as e:
+        print(f"Error in delete_project_memory: {e}")
+        print(f"Error type: {type(e).__name__}")
+        print(f"Error details: {getattr(e, '__dict__', {})}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        
+        return f"Error deleting project memory: {str(e)}"
+
 def create_starlette_app(mcp_server: Server, *, debug: bool = False) -> Starlette:
     """Create a Starlette application that can server the provied mcp server with SSE."""
     sse = SseServerTransport("/messages/")
