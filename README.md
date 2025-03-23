@@ -135,301 +135,236 @@ In order to make mem0 working as fitting to project management purpose, this for
 
 - The following is just sample, find the best by yourself !!
 
-```sample
-# mem0 Guide for Effective Project Memory
+---
 
-**You can manage your memory by using mem0 MCP Server**
+# mem0 Guide for Effective Project Memory (Revised)
+
+**You can manage your memory by using the mem0 MCP Server**
+
+---
 
 ## Important
 
-The mem0 server has a custom instruction that governs how it extracts information from your input. It focuses on extracting:
+The mem0 server extracts the following information from your input. To ensure effective extraction, use structured data formats (e.g., JavaScript objects, JSON, or YAML).
 
-- **Project Status**: Current progress state, completion levels, and overall status.
-- **Task Management**: Tasks with their priorities, dependencies, statuses, and deadlines.
-- **Decision Records**: Decisions, their rationale, implications, and related constraints.
-- **Resource Allocation**: Information about resource usage, assignments, and availability.
-- **Risk Assessment**: Potential risks, their impact ratings, and mitigation strategies.
+- **Project Status**: Current progress, completion levels, and overall status.
+- **Task Management**: Tasks with priorities, dependencies, statuses, and deadlines.
+- **Decision Records**: Decisions, their rationale, implications, and constraints.
+- **Resource Allocation**: Resource usage, assignments, and availability.
+- **Risk Assessment**: Potential risks, impact ratings, and mitigation strategies.
 - **Technical Artifacts**: Technical specifications, dependencies, and implementation notes.
 
-To ensure effective extraction, we use JavaScript object notation for structuring information, which facilitates both human readability and system processing.
+---
 
 ## Memory Structure and Templates
 
-While you can define your own categories, use these recommended structures that align with the memory extraction system:
+Use the following templates to structure memory entries. Each template has a clear purpose, with mandatory and optional fields defined for flexibility.
 
-### 1. Project Status (Maps to previous PROJECT_BRIEF + ACTIVE_CONTEXT)
+### 1. Project Status
+
+**Purpose**: Track overall project progress and current focus.  
+**Mandatory Fields**: `name`, `purpose`  
+**Optional Fields**: `version`, `phase`, `completionLevel`, `milestones`, `currentFocus`
 
 ```javascript
 // [PROJECT: project-name] [TIMESTAMP: yyyy-MM-ddTHH:mm:ss+09:00]
 const projectStatus = {
   overview: {
-    name: "Project Name",
-    purpose: "Brief description",
-    version: "1.2.0",
-    phase: "development"
+    name: "Project Name",  // Mandatory
+    purpose: "Brief description",  // Mandatory
+    version: "1.2.0",  // Optional
+    phase: "development"  // Optional
   },
   progress: {
-    completionLevel: 0.65, // estimated overall completion
-    milestones: [
+    completionLevel: 0.65,  // Optional
+    milestones: [  // Optional
       { name: "Planning", status: "completed", date: "2025-02-15" },
       { name: "Development", status: "in-progress", progress: 0.70 }
     ]
   },
-  currentFocus: [
+  currentFocus: [  // Optional
     "Feature implementation for module X",
     "Performance optimization of component Y"
   ]
 };
 ```
 
-### 2. Task Management (Maps to previous TODO)
+**Python Example**:
+```python
+# [PROJECT: project-name] [TIMESTAMP: yyyy-MM-ddTHH:mm:ss+09:00]
+project_status = {
+  "overview": {
+    "name": "Project Name",  # Mandatory
+    "purpose": "Brief description",  # Mandatory
+    "version": "1.2.0",  # Optional
+    "phase": "development"  # Optional
+  }
+}
+```
+
+---
+
+### 2. Task Management
+
+**Purpose**: Manage task priorities, statuses, and dependencies.  
+**Mandatory Fields**: `description`, `status`  
+**Optional Fields**: `deadline`, `assignee`, `dependencies`
 
 ```javascript
 // [PROJECT: project-name] [TIMESTAMP: yyyy-MM-ddTHH:mm:ss+09:00]
 const taskManagement = {
   highPriority: [
     {
-      description: "Implement feature X",
-      status: "in-progress",
-      deadline: "2025-03-15",
-      assignee: "Team A",
-      dependencies: ["Component Y ready"]
+      description: "Implement feature X",  // Mandatory
+      status: "in-progress",  // Mandatory
+      deadline: "2025-03-15",  // Optional
+      assignee: "Team A",  // Optional
+      dependencies: "Component Y ready"  // Optional, use string
     }
   ],
-  mediumPriority: [
-    // Similar structure
-  ],
+  mediumPriority: [],
   completedTasks: [
     {
-      description: "Setup development environment",
-      completionDate: "2025-03-01"
+      description: "Setup development environment",  // Mandatory
+      status: "completed"  // Mandatory
     }
   ]
 };
 ```
 
-### 3. Decision Records (Maps to previous DECISION)
-
-```javascript
-// [PROJECT: project-name] [TIMESTAMP: yyyy-MM-ddTHH:mm:ss+09:00]
-const decisionRecord = {
-  topic: "Database Selection",
-  options: ["MongoDB", "PostgreSQL", "MySQL"],
-  selected: "PostgreSQL",
-  rationale: "Better support for complex transactions and data integrity",
-  implications: [
-    "Need to refactor existing NoSQL data models",
-    "Additional time required for schema design"
-  ],
-  constraints: [
-    "Must maintain backward compatibility with existing data"
-  ],
-  responsible: ["name who responsible for the dicision"],
-  stakeholders: ["Backend Team", "Database Admin"]
-};
-```
-
-### 4. Resource Allocation
-
-```javascript
-// [PROJECT: project-name] [TIMESTAMP: yyyy-MM-ddTHH:mm:ss+09:00]
-const resourceAllocation = {
-  team: [
-    { role: "Backend Developer", allocation: 0.8, availability: "2025-03-15 to 2025-04-30" },
-    { role: "UI Designer", allocation: 0.5, availability: "2025-03-20 to 2025-04-05" }
-  ],
-  infrastructure: [
-    { resource: "Development Server", usage: "CI/CD Pipeline", status: "operational" },
-    { resource: "Test Environment", usage: "Integration Testing", status: "pending setup" }
-  ],
-  budget: {
-    allocated: 50000,
-    spent: 15000,
-    forecast: 48000
-  }
-};
-```
-
-### 5. Risk Assessment
-
-```javascript
-// [PROJECT: project-name] [TIMESTAMP: yyyy-MM-ddTHH:mm:ss+09:00]
-const riskAssessment = {
-  highRisks: [
-    {
-      description: "Integration with legacy system may cause delays",
-      impact: "High",
-      probability: "Medium",
-      mitigation: "Early prototype and dedicated integration testing phase",
-      owner: "Integration Team"
-    }
-  ],
-  mediumRisks: [
-    // Similar structure
-  ],
-  monitoringItems: [
-    {
-      description: "Performance under high load",
-      indicators: ["Response time > 2s", "CPU usage > 80%"],
-      monitoringPlan: "Weekly load testing"
-    }
-  ]
-};
-```
-
-### 6. Technical Artifacts
-
-```javascript
-// [PROJECT: project-name] [TIMESTAMP: yyyy-MM-ddTHH:mm:ss+09:00]
-const technicalArtifacts = {
-  architecture: {
-    pattern: "Microservices",
-    components: ["API Gateway", "Auth Service", "Product Service", "Order Service"],
-    dataFlow: "API Gateway routes requests to appropriate services"
-  },
-  technologies: [
-    { name: "Node.js", version: "18.x", purpose: "Backend services" },
-    { name: "React", version: "18.x", purpose: "Frontend UI" },
-    { name: "PostgreSQL", version: "14.x", purpose: "Primary database" }
-  ],
-  standards: [
-    "RESTful API design",
-    "JWT for authentication",
-    "Container-based deployment"
-  ]
-};
-```
+---
 
 ## Memory Update Guidelines
 
-When updating memory, follow these enhanced principles:
+Follow these guidelines when updating memory.
 
 ### Metadata Enrichment
 
-Include both explicit metadata (in comments) and implicit contextual information:
-
+**Instruction**: Always include project name and timestamp. Add additional context (e.g., phase, sprint) as needed.  
+**Example**:
 ```javascript
 // [PROJECT: inventory-system] [TIMESTAMP: 2025-03-10T14:30:00+09:00] [PHASE: Development] [SPRINT: 3]
 ```
 
+---
+
 ### Relationship Mapping
 
-Explicitly indicate relationships between items:
-
+**Instruction**: Explicitly state relationships between items using strings. mem0 extracts relationship information as searchable keywords. For example, searching for 'relatedTo User Authentication' will return items that have 'User Authentication' in their `relatedTo` field.  
+**Example**:
 ```javascript
 const featureImplementation = {
   name: "Shopping Cart API",
-  relatedTo: ["User Authentication", "Product Catalog"],
-  enables: ["Checkout Process", "Order Management"],
-  blockedBy: ["Payment Gateway Integration"]
+  relatedTo: "User Authentication, Product Catalog",
+  enables: "Checkout Process, Order Management",
+  blockedBy: "Payment Gateway Integration"
 };
 ```
+
+---
 
 ### Temporal Context
 
-Include temporal information whenever relevant:
-
+**Instruction**: Use ISO 8601 format for dates and explicitly state related events.  
+**Example**:
 ```javascript
 const milestone = {
   name: "Beta Release",
-  plannedDate: "2025-04-15",
+  plannedDate: "2025-04-15T00:00:00+09:00",
   expectedDuration: "2 weeks",
-  prerequisites: ["Feature X", "Feature Y"],
-  subsequentEvents: ["User Testing", "Feedback Collection"]
+  prerequisites: "Feature X, Feature Y",
+  subsequentEvents: "User Testing, Feedback Collection"
 };
 ```
 
+---
+
 ### Structure for Searchability
 
-Organize information with search efficiency in mind:
+**Instruction**: Use consistent terminology, include keywords in property names, and use descriptive variable names.  
+**Example**:
+```javascript
+const taskManagement = {
+  highPriorityTasks: [
+    { description: "Implement login feature", status: "in-progress" }
+  ]
+};
+```
 
-- Use consistent terminology for similar concepts.
-- Include key terms in property names.
-- Use descriptive variable names that reflect content.
+---
 
 ## Enhanced Memory Access Methods
 
-### Reading Memories
+Use `search_project_memories` with queries like the following examples.
 
-Use `search_project_memories` with strategic queries aligned with the extraction categories:
-
+**Query Examples**:
 ```javascript
-// Search for Project Status information
-search_project_memories(query: "projectStatus [PROJECT: current-project]");
-
-// Search for Task Management information
-search_project_memories(query: "taskManagement highPriority");
-
-// Search for Decision Records
-search_project_memories(query: "decisionRecord database");
-
-// Search for risks
-search_project_memories(query: "riskAssessment high");
+search_project_memories("projectStatus [PROJECT: current-project]");  // Search project status
+search_project_memories("taskManagement highPriority");  // Search high-priority tasks
+search_project_memories("decisionRecord database");  // Search database decisions
+search_project_memories("riskAssessment high");  // Search high risks
+search_project_memories("milestone Beta Release");  // Search for a specific milestone
 ```
 
-Focus your queries on:
+**Query Creation Instructions**:
+- Use category names (e.g., `projectStatus`) to narrow the search.
+- Include specific keywords or phrases.
+- Use project identifiers and timestamps for context.
 
-- Category names (`projectStatus`, `taskManagement`, etc.)
-- Key attributes within categories (`highPriority`, `rationale`, etc.)
-- Specific content terms relevant to your search
-- Project identifiers and temporal markers
+---
 
 ## Basic Principles
 
 ### Thorough Project Identification
 
-Include an explicit project identifier in all memory entries. Use repository names or unique project codes.
-
-Example: `// [PROJECT: inventory-system]` (within a JavaScript comment)
+**Instruction**: Include a project identifier in every memory entry.  
+**Example**:
+```javascript
+// [PROJECT: inventory-system]
+```
 
 ### Integrated Chronological Management
 
-Assign accurate timestamps to all entries. Use the time MCP tool to obtain timestamps.
-
-Example: `// [TIMESTAMP: 2025-03-09T00:46:36+09:00]` (within a JavaScript comment)
-
-### Project Recognition at Session Start
-
-Identify the project context from the user's statements. Selectively load the memory of the relevant project. Explicitly recognize and respond to project switches.
-
-### Memory Access Prioritization
-
-At the start of each new session, recall memories in the following order:
-
-1. Project Overview
-2. Active Context
-3. Latest Progress
-4. System Architecture
-
-### Autonomous Memory Access
-
-When the project context becomes unclear, after long periods of inactivity, before discussing new design decisions or implementation policies, or when switching between projects.
+**Instruction**: Attach an accurate timestamp to every entry.  
+**Example**:
+```javascript
+// [TIMESTAMP: 2025-03-09T00:46:36+09:00]
+```
 
 ### User-Driven Memory Operations
 
-Interpret the user's natural language and follow their instructions when understood. For example:
+**Instruction**: Interpret natural language and follow user instructions.  
+**Examples**:
+- "Update memory" → Use `add_project_memory` to update.
+- "Record progress" → Save current progress.
+- "Tell me the project status" → Summarize project status.
 
-- Update memory with the instruction "Update memory".
-- Save the current development status with "Record progress".
-- Summarize the current context with "Tell me the project status".
+---
 
 ## Writing Memories
 
-Use `add_project_memory` to add information. Crucially, format your input as JavaScript code, even if it's not functional code. This leverages the mem0 custom instruction to extract information effectively.
+Use `add_project_memory` to add information. Other tools (e.g., `search_project_memories`, `get_all_project_memories`) can be used as needed.
 
+**JavaScript Example**:
 ```javascript
-// Example: Update Project Status
-add_project_memory(text: "// [PROJECT: current-project] [TIMESTAMP: 2025-03-09T00:46:36+09:00]\nconst projectStatus = {\n  overview: {\n    name: 'Project Name',\n    purpose: 'Brief description',\n    version: '1.2.0',\n    phase: 'development'\n  },\n  progress: {\n    completionLevel: 0.65,\n    milestones: [\n      { name: 'Planning', status: 'completed' },\n      { name: 'Development', status: 'in-progress' }\n    ]\n  }\n};");
-
-// Example: Update Task Management
-add_project_memory(text: "// [PROJECT: current-project] [TIMESTAMP: 2025-03-09T00:46:36+09:00]\nconst taskManagement = {\n  highPriority: [\n    { description: 'Implement feature X', status: 'in-progress' }\n  ],\n  completedTasks: [\n    { description: 'Setup environment', completionDate: '2025-03-01' }\n  ]\n};");
+add_project_memory("// [PROJECT: current-project] [TIMESTAMP: 2025-03-09T00:46:36+09:00]\nconst projectStatus = {\n  overview: { name: 'Project Name', purpose: 'Brief description' }\n};");
 ```
+
+**Python Example**:
+```python
+add_project_memory("# [PROJECT: current-project] [TIMESTAMP: 2025-03-09T00:46:36+09:00]\nproject_status = {'overview': {'name': 'Project Name', 'purpose': 'Brief description'}}")
+```
+
+**Additional Tool Examples**:
+```javascript
+get_all_project_memories();  // Retrieve all extracted project information
+search_project_memories("decisionRecord");  // Find all decision records
+```
+
+---
 
 ## Important Notes
 
-- Use single-line comments (`//`) for metadata like project and timestamp.
-- Use JavaScript object notation (`{}`) to structure information.
-- The `get_all_project_memories` tool will return extracted information, not the raw input.
-- Always include thorough metadata for effective categorization and retrieval.
-- Structure information for both human readability and system processing efficiency.
-```
+- **Metadata**: Always include project name (e.g., `[PROJECT: project-name]`) and timestamp (e.g., `[TIMESTAMP: yyyy-MM-ddTHH:mm:ss+09:00]`).
+- **Data Format**: Use structured formats (e.g., JavaScript objects, JSON, YAML).
+- **`get_all_project_memories` Output**: Returns extracted information (e.g., project name, task descriptions, statuses), not raw input.
