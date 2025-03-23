@@ -75,29 +75,52 @@ mem0_client.update_project(custom_instructions=CUSTOM_INSTRUCTIONS)
 
     This tool adds project information to mem0, utilizing the v2 API for enhanced features and performance.
     If the information already exists (based on internal mem0 logic), it may be automatically updated.
+    For explicit updates, use the `update_project_memory` tool.
 
-    For explicit updates, use the `update_project_memory` tool (to be implemented).
+    This tool supports various project information types including: Project Status, Task Management,
+    Decision Records, Resource Allocation, Risk Assessment, and Technical Artifacts.
 
-    This tool is designed to store the following types of project information:
-    - Project Status
-    - Task Management
-    - Decision Records
-    - Resource Allocation
-    - Risk Assessment
-    - Technical Artifacts
-
-    Information should be formatted according to the templates defined in Memory Structure and Templates, using structured data formats (JavaScript objects, JSON, YAML), and include project name and timestamp as metadata.
-
-    Relationships between items should be described using keys such as 'relatedTo', 'enables', 'blockedBy', etc., in string format.
+    Information should be formatted according to the templates defined in Memory Structure and Templates,
+    using structured data formats (JavaScript objects, JSON, YAML), and include project name and timestamp as metadata.
 
     Args:
-        text: The project information to add or update. It should be formatted according to the templates defined in Memory Structure and Templates, using structured data formats (JavaScript objects, JSON, YAML).
+        text: The project information to add or update.
+        run_id: (Optional) Session identifier for organizing related memories into logical groups.
+               Using run_id helps maintain context within specific conversation flows or tasks.
+               Recommended format: "project:name:category:subcategory"
+               Example values: "project:member-webpage:feature:authentication"
+        metadata: (Optional) Additional structured information about this memory.
+                 This can include tags, categories, priority levels, related documents, etc.
+                 Example: {"type": "meeting", "priority": "high", "tags": ["frontend", "design"]}
+        immutable: (Optional) If set to True, this memory cannot be modified later (default: False).
+        expiration_date: (Optional) Date when this memory should expire (format: YYYY-MM-DD).
+                        If not specified, default is 30 days from creation.
+        custom_categories: (Optional) A list of categories with category name and description.
+                          Example: {"technical_debt": "Issues requiring refactoring", 
+                                   "architecture_decision": "System design decisions"}
+        includes: (Optional) String to include specific preferences in the memory.
+                 Example: "performance considerations, security aspects"
+        excludes: (Optional) String to exclude specific preferences from the memory.
+                 Example: "temporary workarounds, draft ideas"
+        infer: (Optional) Whether to infer structured data from the input (True) or 
+               store raw messages (False). Default: True
 
     Returns:
-        str: A success message if the project information was added or updated successfully, or an error message if there was an issue.
+        str: A success message if the project information was added or updated successfully, 
+             or an error message if there was an issue.
     """
 )
-async def add_project_memory(text: str) -> str:
+async def add_project_memory(
+    text: str, 
+    run_id: str = None, 
+    metadata: dict = None, 
+    immutable: bool = False, 
+    expiration_date: str = None,
+    custom_categories: dict = None,
+    includes: str = None,
+    excludes: str = None,
+    infer: bool = None
+) -> str:
     """Add new project management information to mem0.
 
     This tool is designed to store structured project information including:
@@ -108,14 +131,26 @@ async def add_project_memory(text: str) -> str:
     - Risk Assessment
     - Technical Artifacts
 
-    Information should be formatted according to the templates defined in Memory Structure and Templates, using structured data formats (JavaScript objects, JSON, YAML), and include project name and timestamp as metadata.
-
-    Relationships between items should be described using keys such as 'relatedTo', 'enables', 'blockedBy', etc., in string format.
+    Information should be formatted according to the templates defined in Memory Structure and Templates,
+    using structured data formats (JavaScript objects, JSON, YAML), and include project name and timestamp as metadata.
 
     Args:
-        text: The project information to add to mem0. It should be formatted according to the templates defined in Memory Structure and Templates, using structured data formats (JavaScript objects, JSON, YAML), and include project name and timestamp as metadata. Metadata should be added at the top level of the object using the `project` key and `timestamp` key.
+        text: The project information to add to mem0.
+        run_id: (Optional) Session identifier for organizing related memories into logical groups.
+               Recommended format: "project:name:category:subcategory"
+               Example: "project:member-webpage:sprint:2025-q2-sprint3"
+        metadata: (Optional) Additional structured information about this memory.
+                 Recommended schema: {"type": "meeting|task|decision|status|risk", 
+                                     "priority": "high|medium|low",
+                                     "tags": ["tag1", "tag2"]}
+        immutable: (Optional) If True, prevents future modifications to this memory.
+        expiration_date: (Optional) Date when this memory should expire (YYYY-MM-DD).
+        custom_categories: (Optional) Custom categories for organizing project information.
+        includes: (Optional) Specific aspects or preferences to include in the memory.
+        excludes: (Optional) Specific aspects or preferences to exclude from the memory.
+        infer: (Optional) Controls whether to process and infer structure from the input.
 
-        Example:
+    Example:
         ```javascript
         // [PROJECT: project-name] [TIMESTAMP: 2025-03-23T10:58:29+09:00]
         const projectStatus = {
@@ -134,10 +169,64 @@ async def add_project_memory(text: str) -> str:
     """
     try:
         messages = [{"role": "user", "content": text}]
-        mem0_client.add(messages, user_id=DEFAULT_USER_ID, output_format="v1.1", version="v2")
-        return f"Successfully added project information: {text}"
+        
+        # APIに渡すパラメータを構築
+        api_params = {
+            "messages": messages,
+            "user_id": DEFAULT_USER_ID,
+            "output_format": "v1.1",
+            "version": "v2"
+        }
+        
+        # オプションパラメータが指定されている場合のみ追加
+        if run_id:
+            api_params["run_id"] = run_id
+        if metadata:
+            api_params["metadata"] = metadata
+        if immutable:
+            api_params["immutable"] = immutable
+        if expiration_date:
+            api_params["expiration_date"] = expiration_date
+        if custom_categories:
+            api_params["custom_categories"] = custom_categories
+        if includes:
+            api_params["includes"] = includes
+        if excludes:
+            api_params["excludes"] = excludes
+        if infer is not None:  # デフォルト値があるため、明示的に指定された場合のみ
+            api_params["infer"] = infer
+            
+        # API呼び出し
+        response = mem0_client.add(**api_params)
+        
+        # 成功情報の構築
+        success_parts = ["Successfully added project information"]
+        
+        # 使用されたパラメータ情報を追加
+        param_details = []
+        if run_id:
+            param_details.append(f"run_id: '{run_id}'")
+        if metadata:
+            param_details.append(f"metadata: {metadata}")
+        if immutable:
+            param_details.append("immutable: True")
+        if expiration_date:
+            param_details.append(f"expiration_date: '{expiration_date}'")
+        if custom_categories:
+            param_details.append(f"custom_categories: {len(custom_categories)} categories")
+        if includes or excludes or infer is not None:
+            param_details.append("content filtering applied")
+            
+        # パラメータ情報をレスポンスに含める
+        if param_details:
+            success_parts.append("with " + ", ".join(param_details))
+            
+        return " ".join(success_parts)
     except Exception as e:
-        return f"Error adding project information: {str(e)}"
+        # エラー発生時は詳細情報を含めて返却
+        error_message = str(e)
+        error_type = type(e).__name__
+        return f"Error adding project information: {error_type} - {error_message}"
 
 @mcp.tool(
     description="""Retrieve all stored project management information for the default user (v2 API).
