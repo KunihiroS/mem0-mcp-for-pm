@@ -154,25 +154,128 @@ async def add_project_memory(text: str) -> str:
     - Technical specifications
     Results are returned in JSON format with metadata."""
 )
-async def get_all_project_memories() -> str:
-    """Get all project management information for the default user.
+@mcp.tool(
+    description="""Retrieve all stored project management information for the default user (v2 API).
 
-    Returns a JSON formatted list of all stored project data, including:
-    - Project status information
-    - Task management details
-    - Decision records
-    - Resource allocation data
-    - Risk assessments
-    - Technical specifications
-    Each entry includes metadata about when it was created and its content type.
+    This tool uses the v2 get_all API, which supports pagination and filtering.
+
+    Args:
+        page: (Optional) The page number to retrieve. Default is 1.
+        page_size: (Optional) The number of items per page. Default is 50.
+        filters: (Optional) A dictionary of filters to apply.
+            Available fields: user_id, agent_id, app_id, run_id, created_at, updated_at, categories, keywords.
+            Supports logical operators (AND, OR) and comparison operators (in, gte, lte, gt, lt, ne, contains, icontains).
+            Example:
+            {
+                "AND": [
+                    {"user_id": "alex"},
+                    {"created_at": {"gte": "2024-03-01", "lte": "2025-03-31"}}
+                ]
+            }
+
+    Returns:
+        str: A JSON formatted list of project memories.
+    """
+)
+
+async def get_all_project_memories(page: int = 1, page_size: int = 50, filters: dict = None) -> str:
+    """
+    Retrieves all project management information for the default user.
+    
+    This method uses mem0's v2 API to fetch memory data and returns it in an appropriate format.
+    Since the API response structure may differ from official documentation, this implementation
+    handles multiple structural patterns.
+    
+    Args:
+        page: Page number to retrieve (default: 1)
+        page_size: Number of items per page (default: 50)
+        filters: Optional filters to apply
+    
+    Returns:
+        str: JSON formatted list of project memories
     """
     try:
-        memories = mem0_client.get_all(user_id=DEFAULT_USER_ID, page=1, page_size=50)
-        flattened_memories = [memory["memory"] for memory in memories["results"]]
-        return json.dumps(flattened_memories, indent=2)
+        # Fetch memory data from mem0 client
+        response = mem0_client.get_all(
+            user_id=DEFAULT_USER_ID, 
+            page=page, 
+            page_size=page_size, 
+            version="v2", 
+            filters=filters
+        )
+        
+        # Log response details for debugging
+        print(f"Retrieved memories type: {type(response)}")
+        print(f"Retrieved memories structure: {response if isinstance(response, (bool, int, float, str)) else '(Complex structure)'}")
+        
+        # Memory content extraction function
+        def extract_memory_content(item):
+            """Function to extract actual content from memory items"""
+            if not isinstance(item, dict):
+                print(f"Warning: Expected dictionary but got {type(item)}")
+                return None
+                
+            # Case 1: 'memory' key exists (actual API response structure)
+            if "memory" in item:
+                return item["memory"]
+            
+            # Case 2: 'name' key exists (structure from documentation example)
+            elif "name" in item:
+                # Process according to documentation example
+                return item
+            
+            # Case 3: Unknown structure
+            else:
+                print(f"Warning: Unknown memory structure: {item}")
+                return item  # As a fallback, return the original item
+        
+        # Process API response based on structure pattern
+        processed_memories = []
+        
+        # Pattern 1: Pagination structure {"results": [...]}
+        if isinstance(response, dict) and "results" in response:
+            memory_items = response["results"]
+            # Log pagination information
+            print(f"Pagination info - Count: {response.get('count')}, Next: {response.get('next')}, Previous: {response.get('previous')}")
+            
+            for item in memory_items:
+                memory_content = extract_memory_content(item)
+                if memory_content:
+                    processed_memories.append(memory_content)
+        
+        # Pattern 2: Direct array [...]
+        elif isinstance(response, list):
+            for item in response:
+                memory_content = extract_memory_content(item)
+                if memory_content:
+                    processed_memories.append(memory_content)
+        
+        # Pattern 3: Other structures (single object, etc.)
+        else:
+            print(f"Warning: Unexpected response structure: {type(response)}")
+            # As a fallback, convert the entire response to a list
+            processed_memories = [response] if response else []
+        
+        # Log final processing statistics
+        print(f"Processed {len(processed_memories)} memory items")
+        
+        # Return results as formatted JSON
+        return json.dumps(processed_memories, indent=2, ensure_ascii=False)
+    
     except Exception as e:
-        return f"Error retrieving project information: {str(e)}"
-
+        # Log detailed error information
+        print(f"Error in get_all_project_memories: {e}")
+        print(f"Error type: {type(e).__name__}")
+        print(f"Error details: {getattr(e, '__dict__', {})}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        
+        # Return error message
+        return json.dumps({
+            "error": f"Error retrieving project information: {str(e)}",
+            "error_type": type(e).__name__
+        }, ensure_ascii=False)
+    
 @mcp.tool(
     description="""Search through stored project management information using semantic search. This tool should be called 
     for user queries to find relevant project data. It helps find:
