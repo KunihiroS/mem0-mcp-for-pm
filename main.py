@@ -240,6 +240,11 @@ async def search_project_memories(query: str, filters: dict = None) -> List[Dict
     - Use UPDATE when: making minor changes, preserving references is critical
     - Consider DELETE+CREATE when: completely restructuring content
     - When unsure: start with update, and if structural issues occur, fall back to delete+create
+    
+    IMPORTANT NOTE: While `add_project_memory` might sometimes update existing entries 
+    based on internal matching logic, `update_project_memory` ensures explicit and 
+    intentional updates to specific entries. Use this tool when you need guaranteed
+    updates to an exact memory entry with full control over the process.
 
     Args:
         memory_id: The unique identifier of the memory to update
@@ -253,27 +258,26 @@ async def search_project_memories(query: str, filters: dict = None) -> List[Dict
         # 1. Search for memories to update
         memories = await search_project_memories("project status")
         
-        # 2. Extract memory IDs
-        memory_ids = await extract_memory_ids(memories)
-        
-        # 3. Get the first memory's content
+        # 2. From the results, identify the ID of the memory to update
         if memories and isinstance(memories, list) and len(memories) > 0:
+            memory_id = memories[0]["id"]
             original_content = memories[0].get("memory", "")
             
-            # 4. Update only specific information while preserving structure
+            # 3. Update only specific information while preserving structure
             updated_content = original_content.replace(
                 "completionLevel: 0.5", 
                 "completionLevel: 0.7"
             )
             
-            # 5. Update the memory
+            # 4. Update the memory with explicit ID reference
             result = await update_project_memory(
-                memory_id=memory_ids[0],
+                memory_id=memory_id,
                 text=updated_content
             )
         ```
     """
 )
+
 async def update_project_memory(memory_id: str, text: str) -> Dict:
     """Update an existing project memory with new content.
     
@@ -329,50 +333,6 @@ async def delete_project_memory(memory_id: str) -> str:
         print(f"Traceback: {traceback.format_exc()}")
         
         return f"Error deleting project memory: {str(e)}"
-    
-@mcp.tool(
-    description="""Extract memory IDs from the results of get_all_project_memories or search_project_memories.
-
-    This utility tool helps extract memory IDs that can be used with delete operations.
-
-    Args:
-        memories: A list of memory objects or paginated response from memory retrieval operations.
-
-    Returns:
-        list: A list of memory IDs that can be used with delete_project_memory.
-    """
-)
-async def extract_memory_ids(memories: Union[List[Dict], Dict]) -> List[str]:
-    """Extract memory IDs from memory retrieval results.
-    
-    This tool simplifies the extraction of memory IDs from complex API responses.
-    
-    Args:
-        memories: Response from get_all_project_memories or search_project_memories
-        
-    Returns:
-        list: List of memory IDs
-    """
-    try:
-        # ページネーション結果の場合
-        if isinstance(memories, dict) and "results" in memories:
-            memory_list = memories["results"]
-        # 直接リストが返された場合
-        elif isinstance(memories, list):
-            memory_list = memories
-        # エラーレスポンスなど、想定外の形式の場合
-        else:
-            return {"error": "Unexpected format in memories parameter"}
-        
-        # 各メモリからIDを抽出
-        memory_ids = []
-        for memory in memory_list:
-            if isinstance(memory, dict) and "id" in memory:
-                memory_ids.append(memory["id"])
-        
-        return memory_ids
-    except Exception as e:
-        return {"error": f"Failed to extract memory IDs: {str(e)}"}
 
 # Delete multi posts at once, not tested yet.
 @mcp.tool(
