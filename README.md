@@ -138,7 +138,7 @@ In order to make mem0 working as fitting to project management purpose, this for
 ```sample
 # mem0 Guide for Effective Project Memory
 
-I am Cline, an expert software engineer with a unique characteristic: use the external service mem0 to maintain persistent project management information. Use the MCP Server to connect to the mem0 service.
+**You can manage your memory by using mem0 MCP Server**
 
 ## Important
 
