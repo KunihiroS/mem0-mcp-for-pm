@@ -186,27 +186,49 @@ async def get_all_project_memories() -> str:
     describe what you're looking for in plain English. Always search the project memory before 
     providing answers to ensure you leverage existing knowledge."""
 )
-async def search_project_memories(query: str) -> str:
-    """Search project management information using semantic search.
+@mcp.tool(
+    description="""Search through stored project management information using semantic search (v2 API).
 
-    The search is powered by natural language understanding, allowing you to find:
-    - Project status updates
-    - Task management information
-    - Decision records
-    - Resource allocation details
-    - Risk assessments
-    - Technical documentation
-    Results are ranked by relevance to your query.
+    This tool uses the v2 search API, which supports advanced filtering capabilities.
 
     Args:
-        query: Search query string describing what you're looking for. Can be natural language
-              or specific technical terms.
+        query: The search query string.
+        filters: (Optional) A dictionary of filters to apply to the search.
+            Available fields: user_id, agent_id, app_id, run_id, created_at, updated_at, categories, keywords.
+            Supports logical operators (AND, OR) and comparison operators (in, gte, lte, gt, lt, ne, contains, icontains).
+            Example:
+            {
+                "AND": [
+                    {"user_id": "alex"},
+                    {"created_at": {"gte": "2024-03-01", "lte": "2025-03-31"}}
+                ]
+            }
+
+    Returns:
+        str: A JSON formatted list of search results.
     """
+)
+async def search_project_memories(query: str, filters: dict = None) -> str:
     try:
-        memories = mem0_client.search(query, user_id=DEFAULT_USER_ID, output_format="v1.1")
-        flattened_memories = [memory["memory"] for memory in memories["results"]]
+        memories = mem0_client.search(query, user_id=DEFAULT_USER_ID, version="v2", filters=filters)
+        print(memories)
+        print(type(memories))
+        if isinstance(memories, list):
+            flattened_memories = []
+            for memory in memories:
+                if isinstance(memory, dict) and "memory" in memory:
+                    flattened_memories.append(memory["memory"])
+                else:
+                    print(f"Warning: Unexpected memory format: {memory}")
+                    # 必要に応じてエラー処理を追加
+        else:
+            print(f"Warning: Unexpected memories format: {memories}")
+            flattened_memories = []  # またはエラーを返す
         return json.dumps(flattened_memories, indent=2)
     except Exception as e:
+        print(f"Error: {e}")
+        print(f"Error type: {type(e)}")
+        print(f"Error args: {e.args}")
         return f"Error searching project information: {str(e)}"
 
 def create_starlette_app(mcp_server: Server, *, debug: bool = False) -> Starlette:
