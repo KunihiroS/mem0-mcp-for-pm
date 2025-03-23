@@ -28,21 +28,44 @@ Interpret and Extract Project Management Information:
 - Risk Assessment: Identify potential risks, their impact ratings, and mitigation strategies.
 - Technical Artifacts: Extract technical specifications, dependencies, and implementation notes.
 
+# Memory Structure and Templates
+- Use the following templates to structure your input:
+  - Project Status: Track overall project progress and current focus. Mandatory Fields: `name`, `purpose`. Optional Fields: `version`, `phase`, `completionLevel`, `milestones`, `currentFocus`.
+  - Task Management: Manage task priorities, statuses, and dependencies. Mandatory Fields: `description`, `status`. Optional Fields: `deadline`, `assignee`, `dependencies`.
+  - Decision Records: Document decisions, their rationale, implications, and constraints. Mandatory Fields: `topic`, `selected`, `rationale`. Optional Fields: `options`, `implications`, `constraints`, `responsible`, `stakeholders`.
+  - Resource Allocation: Capture information about resource usage, assignments, and availability. Mandatory Fields: None. Optional Fields: `team`, `infrastructure`, `budget`.
+  - Risk Assessment: Identify potential risks, their impact ratings, and mitigation strategies. Mandatory Fields: `description`, `impact`, `probability`. Optional Fields: `mitigation`, `owner`, `monitoringItems`.
+  - Technical Artifacts: Extract technical specifications, dependencies, and implementation notes. Mandatory Fields: None. Optional Fields: `architecture`, `technologies`, `standards`.
+- Refer to the 'Memory Structure and Templates' section in the documentation for detailed descriptions and examples.
+
 # Metadata Extraction (when available)
-- Temporal Context: Extract timestamps, durations, deadlines, and sequence information.
+- Temporal Context: Extract timestamps, durations, deadlines, and sequence information.  Format dates and times using ISO 8601 format.
 - Project Context: Identify project names, phases, domains, and scope indicators.
-- Relationship Mapping: Determine relationships between extracted elements (dependencies, etc.).
+- Relationship Mapping: Extract relationships between extracted elements, such as:
+  - 'relatedTo': Elements that are related to each other (bidirectional).
+  - 'enables': Element A enables element B (directional).
+  - 'blockedBy': Element A is blocked by element B (directional).
+  - 'dependsOn': Element A depends on element B (directional).
+  - Relationships should be extracted as strings or arrays of strings.
 
 # Interpretation Guidelines
-- For structured input (JavaScript/JSON objects): Preserve the structural hierarchy while enriching with contextual metadata.
-- For code-structured representations: Analyze both the structural patterns and the semantic content.
-- For mixed-format input: Prioritize semantic content while acknowledging structural hints.
+- For structured input (JavaScript/JSON objects): Preserve the structural hierarchy while enriching with contextual metadata, and extract key-value pairs.
+- For code-structured representations: Analyze both the structural patterns (e.g., variable names, function names, class names) and the semantic content (e.g., comments, descriptions, code logic).
+- For mixed-format input: Prioritize semantic content while acknowledging structural hints (e.g., headings, lists, tables). Extract information from text, code snippets, and structured data blocks.
 
 # Output Structure Formation
-- Maintain consistent categorization across multiple records.
-- Preserve original identifiers and reference keys for continuity.
-- Generate contextually appropriate metadata when implicit in the source.
-- Structure output to facilitate future retrieval, updating, and relationship mapping.
+- Extracted information should be categorized according to the Primary Extraction Categories.
+- Preserve original identifiers and reference keys (e.g., project name, task ID) for continuity.
+- When metadata such as project name and timestamp are not explicitly provided as top-level keys, attempt to infer them from the context (e.g., from comments).
+- The output should be a JSON object with the following structure:
+  {
+    "category": "string",  // Primary Extraction Category (e.g., "Task Management")
+    "content": "any",      // Extracted content (e.g., task details)
+    "metadata": "object",  // Extracted metadata (e.g., {"project": "ProjectA", "deadline": "2023-12-01"})
+    "relationships": "array"  // Extracted relationships (e.g., [{"type": "dependsOn", "target": "TaskB"}])
+  }
+  // Note: The current implementation of get_all_project_memories and search_project_memories returns a
+  // flattened list of strings. This output structure is a future goal and may require changes to those tools.
 """
 mem0_client.update_project(custom_instructions=CUSTOM_INSTRUCTIONS)
 
