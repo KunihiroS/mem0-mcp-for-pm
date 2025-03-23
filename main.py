@@ -70,7 +70,12 @@ Interpret and Extract Project Management Information:
 mem0_client.update_project(custom_instructions=CUSTOM_INSTRUCTIONS)
 
 @mcp.tool(
-    description="""Add structured project information to mem0.
+    description="""Add or update structured project information in mem0 using v2 API.
+
+    This tool adds project information to mem0, utilizing the v2 API for enhanced features and performance.
+    If the information already exists (based on internal mem0 logic), it may be automatically updated.
+
+    For explicit updates, use the `update_project_memory` tool (to be implemented).
 
     This tool is designed to store the following types of project information:
     - Project Status
@@ -83,24 +88,13 @@ mem0_client.update_project(custom_instructions=CUSTOM_INSTRUCTIONS)
     Information should be formatted according to the templates defined in Memory Structure and Templates, using structured data formats (JavaScript objects, JSON, YAML), and include project name and timestamp as metadata.
 
     Relationships between items should be described using keys such as 'relatedTo', 'enables', 'blockedBy', etc., in string format.
-    Example:
-    ```javascript
-    const featureImplementation = {
-      project: "project-name",
-      timestamp: "2025-03-23T10:58:29+09:00",
-      name: "Shopping Cart API",
-      relatedTo: "User Authentication, Product Catalog",
-      enables: "Checkout Process, Order Management",
-      blockedBy: "Payment Gateway Integration"
-    };
-    ```
 
-    Metadata example:
-    ```javascript
-    // [PROJECT: inventory-system] [TIMESTAMP: 2025-03-10T14:30:00+09:00]
-    ```
+    Args:
+        text: The project information to add or update. It should be formatted according to the templates defined in Memory Structure and Templates, using structured data formats (JavaScript objects, JSON, YAML).
 
-    Using this tool allows for effective management of project progress and decision history."""
+    Returns:
+        str: A success message if the project information was added or updated successfully, or an error message if there was an issue.
+    """
 )
 async def add_project_memory(text: str) -> str:
     """Add new project management information to mem0.
@@ -139,7 +133,7 @@ async def add_project_memory(text: str) -> str:
     """
     try:
         messages = [{"role": "user", "content": text}]
-        mem0_client.add(messages, user_id=DEFAULT_USER_ID, output_format="v1.1")
+        mem0_client.add(messages, user_id=DEFAULT_USER_ID, output_format="v1.1", version="v2")
         return f"Successfully added project information: {text}"
     except Exception as e:
         return f"Error adding project information: {str(e)}"
