@@ -133,273 +133,84 @@ In order to make mem0 working as fitting to project management purpose, this for
 
 ### For MCP Host
 
-- The following is just sample, find the best by yourself !!
+- [Host_inst.md] is just sample, find the best by yourself !!
 
----
+# mem0-mcp-for-pm
 
-# mem0 Guide for Effective Project Memory (Enhanced)
+このプロジェクトは、mem0サービスと統合するMCPサーバーの実装例です。  
+主にSSEトランスポート方式による常時稼働サーバーとして設計されています。
 
-This guide outlines strategies and templates for effectively managing project information using mem0. The aim is to improve searchability and reusability of project data through structured templates and metadata management.
+## 使い方
 
-## Information Structure and Templates
+pipx または uvx を用いて実行可能です。
 
-mem0 can effectively manage the following types of information. Using structured templates improves searchability and reusability. Note that the templates provided are examples and should be adapted to fit specific project needs.
+## 依存関係
 
-### 1. Project Status Management
+- Python >= 3.12
+- httpx, mcp, mem0ai など
 
-**Template**:
-```javascript
-// [PROJECT: project-name] [TIMESTAMP: yyyy-MM-ddTHH:mm:ss+09:00] [TYPE: Project Status]
-const projectStatus = {
-  overview: {
-    name: "Project Name",      // Required
-    purpose: "Project Purpose", // Required
-    version: "1.2.0",          // Optional
-    phase: "development"       // Optional
-  },
-  progress: {
-    completionLevel: 0.65,    // Completion rate (value between 0 and 1)
-    milestones: [
-      { name: "Planning Phase", status: "completed", date: "2025-02-15" },
-      { name: "Development Phase", status: "in-progress", progress: 0.70 }
-    ]
-  },
-  currentFocus: ["Implementing Feature X", "Optimizing Component Y"],
-  risks: ["Concerns about API stability", "Resource shortage"]
-};
-```
+（以下、プロジェクトのその他のドキュメントがここに含まれます）
 
-### 2. Task Management
+## 改修計画
 
-**Template**:
-```javascript
-// [PROJECT: project-name] [TIMESTAMP: yyyy-MM-ddTHH:mm:ss+09:00] [TYPE: Task Management]
-const taskManagement = {
-  highPriority: [
-    {
-      description: "Implement Feature X",     // Required
-      status: "in-progress",                 // Required
-      deadline: "2025-03-15",                // Optional
-      assignee: "Team A",                    // Optional
-      dependencies: "Component Y"            // Optional
-    }
-  ],
-  mediumPriority: [],
-  completedTasks: [
-    {
-      description: "Setup Development Environment",
-      status: "completed"
-    }
-  ]
-};
-```
+### 背景
 
-### 3. Meeting Summary
+現行のmem0-mcpはSSEトランスポート方式を用いた常時稼働型サーバーとして実装されていますが、  
+リソース消費やポート管理の問題があり、ユーザーの利便性が低い点が課題でした。  
+そのため、pipx/uvx経由で動的に起動できる、軽量なスタイルへの改修が求められています。
 
-**Template**:
-```javascript
-// [PROJECT: project-name] [TIMESTAMP: yyyy-MM-ddTHH:mm:ss+09:00] [TYPE: Meeting Summary]
-const meetingMinutes = {
-  title: "Weekly Progress Meeting",
-  date: "2025-03-23",
-  attendees: [
-    { department: "Development", members: ["Sato", "Suzuki"] },
-    { department: "Design", members: ["Tanaka"] }
-  ],
-  topics: ["Progress Report", "Risk Management", "Next Week's Plan"],
-  decisions: [
-    "Approve additional resource allocation",
-    "Delay release date by one week"
-  ],
-  actionItems: [
-    { description: "Procedure for adding resources", assignee: "Sato", dueDate: "2025-03-25" },
-    { description: "Revise test plan", assignee: "Suzuki", dueDate: "2025-03-24" }
-  ]
-};
-```
+### 概要
 
-## Effective Information Management Techniques
+- プロジェクト構造の再構築：__init__.py, __main__.py, server.pyに分割  
+- 標準入出力（stdio）を利用した通信方式への切り替え  
+- ツール定義（Mem0Toolsクラス）の再設計とAPI連携の強化  
+- 環境変数を利用したセキュアな設定管理  
+- pipx/uvxによる簡易なインストールと実行
 
-### 1. Context Management (run_id)
+### 実装戦略
 
-Using mem0's `run_id` parameter, you can logically group related information. This helps maintain specific conversation flows or project contexts.
+1. 準備段階：既存コードを分析し、依存関係を整理する。  
+2. 実装段階：新しいディレクトリ構造に合わせ、stdioサーバー実装を中心にコード改修を行う。  
+3. テスト段階：単体テストおよび統合テストを実施し、動作とエラーハンドリングを検証する。  
+4. パッケージングと配布：pyproject.tomlを整備し、pipx/uvxでの簡単なインストール・実行を実現する。
 
-**Recommended Format**:
-```
-project:project-name:category:subcategory
-```
+### まとめ
 
-**Usage Example**:
-```javascript
-// Managing information related to a specific feature
-add_project_memory(
-  "// [PROJECT: Member System] [TYPE: Technical Specification]\nconst authSpec = {...};",
-  run_id="project:member-system:feature:authentication",
-  metadata={"type": "specification"}
-);
+本改修計画により、mem0-mcpは動的に起動可能な軽量サーバーとして再構築され、  
+ユーザーはpipx/uvxを通じて手軽に利用できるようになります。  
+また、将来的なビジネスロジックの分離や他サービスへの転用も視野に入れた設計となっております.
+  
+――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+以上
 
-// Adding a task for the same feature
-add_project_memory(
-  "// [PROJECT: Member System] [TYPE: Task Management]\nconst authTasks = {...};",
-  run_id="project:member-system:feature:authentication",
-  metadata={"type": "task"}
-);
+## 改修計画追記
 
-// Searching for related information
-search_project_memories("authentication", {
-  "run_id": "project:member-system:feature:authentication"
-});
-```
+以下は、Tavily SearchやBrave Searchなどの外部情報源を参照して、MCPアーキテクチャの調査および裏付けを行った結果に基づく、改修計画の追加情報です.
 
-### 2. Effective Use of Metadata
+### 調査結果の裏付け
 
-Using metadata can enhance the searchability of information. We recommend using the following schema:
-```javascript
-{
-  "type": "meeting|task|decision|status|risk", // Type of information
-  "priority": "high|medium|low",               // Priority
-  "tags": ["frontend", "backend", "design"],   // Related tags
-  "status": "pending|in-progress|completed"    // Status
-}
-```
+- MCPの仕様文書や業界情報から、stdioトランスポート方式が動的起動に適していることが確認されました。これにより、従来のSSE方式に比べ、リソース消費の削減とユーザーの利便性向上が期待されます.
+- Brave Searchなどの調査結果から、オンデマンド実行環境に最適なMCPサーバーの動的起動が、クラウドネイティブな運用において実績を持つことが裏付けられました.
 
-**Usage Example**:
-```javascript
-// Registering a high-priority task
-add_project_memory(
-  "// [PROJECT: Member System] [TYPE: Task Management]\nconst task = {...};",
-  metadata={
-    "type": "task",
-    "priority": "high",
-    "tags": ["frontend", "authentication"]
-  }
-);
+### 改修計画の概要
 
-// Searching for tasks with a specific tag
-search_project_memories("task", {
-  "metadata": {
-    "tags": ["frontend"]
-  }
-});
-```
+1. **プロジェクト構造の再構築**  
+   既存のコードを、__init__.py, __main__.py, server.pyの3ファイルに分割して再構築し、可読性と拡張性を向上させます.
 
-### 3. Information Lifecycle Management
+2. **通信方式の切り替え**  
+   現行のSSE方式から、標準入出力（stdio）を利用した通信方式に切り替え、動的なプロセス起動を可能にし、リソース消費とポート管理の負担を軽減します.
 
-Using the `immutable` and `expiration_date` parameters, you can manage the lifecycle of information.
+3. **ツール定義とAPI連携の強化**  
+   Mem0Toolsクラスを中心に、mem0 APIとの連携および各種ツールの入力スキーマを明確に定義します.
 
-**Usage Example**:
-```javascript
-// Recording an immutable decision
-add_project_memory(
-  "// [PROJECT: Member System] [TYPE: Decision Record]\nconst decision = {...};",
-  immutable=True,  // Set as immutable
-  metadata={"type": "decision"}
-);
+4. **環境変数による設定管理**  
+   MEM0_API_KEYなどの重要情報を環境変数で管理し、セキュリティおよび実行環境の柔軟性を確保します.
 
-// Information with an expiration date
-add_project_memory(
-  "// [PROJECT: Member System] [TYPE: Meeting Summary]\nconst meeting = {...};",
-  expiration_date="2025-06-30",  // Expires on this date
-  metadata={"type": "meeting"}
-);
-```
+5. **パッケージングと配布の簡易化**  
+   pyproject.tomlを整備し、pipx/uvxを通じたインストールと実行を容易にします.
 
-## Practical Usage Patterns
+### まとめ
 
-### 1. Sprint Management Example
-```javascript
-// Registering the sprint plan at the start
-add_project_memory(
-  "// [PROJECT: Member System] [TIMESTAMP: 2025-05-01T10:00:00+09:00] [TYPE: Project Status]\n" +
-  "const sprintPlan = {\n" +
-  "  sprint: \"Sprint-2025-05\",\n" +
-  "  duration: \"2 weeks\",\n" +
-  "  goals: [\"Implement authentication feature\", \"Improve UI\"],\n" +
-  "  tasks: [\n" +
-  "    { description: \"Implement login screen\", assignee: \"Tanaka\", estimate: \"3 days\" },\n" +
-  "    { description: \"API integration\", assignee: \"Sato\", estimate: \"2 days\" }\n" +
-  "  ]\n" +
-  "};",
-  run_id="project:member-system:sprint:2025-05",
-  metadata={"type": "status", "tags": ["sprint-planning"]}
-);
+追加調査に基づく本改修計画は、動的に起動可能な軽量MCPサーバーの実現により、ユーザーが手間なくmem0サービスと統合された環境を利用できる最適なアプローチであると確信しています。さらに、将来的な機能拡張および他サービスへの転用も視野に入れた設計となっています.
 
-// Mid-sprint progress report
-add_project_memory(
-  "// [PROJECT: Member System] [TIMESTAMP: 2025-05-08T15:00:00+09:00] [TYPE: Project Status]\n" +
-  "const progress = {\n" +
-  "  sprint: \"Sprint-2025-05\",\n" +
-  "  completionLevel: 0.4,\n" +
-  "  status: [\n" +
-  "    { task: \"Implement login screen\", progress: 0.7, status: \"in-progress\" },\n" +
-  "    { task: \"API integration\", progress: 0.2, status: \"in-progress\" }\n" +
-  "  ],\n" +
-  "  blockers: [\"Change in API response specification\"]\n" +
-  "};",
-  run_id="project:member-system:sprint:2025-05",
-  metadata={"type": "status", "tags": ["sprint-progress"]}
-);
-```
-
-### 2. Risk Management Example
-```javascript
-// Registering a risk
-add_project_memory(
-  "// [PROJECT: Member System] [TIMESTAMP: 2025-05-03T11:00:00+09:00] [TYPE: Risk Assessment]\n" +
-  "const risk = {\n" +
-  "  description: \"Concerns about external API stability\",\n" +
-  "  impact: \"High\",\n" +
-  "  probability: \"Medium\",\n" +
-  "  mitigation: \"Implement fallback mechanism\",\n" +
-  "  owner: \"Development Lead\"\n" +
-  "};",
-  run_id="project:member-system:risk:api-stability",
-  metadata={"type": "risk", "priority": "high"}
-);
-
-// Updating the risk status
-add_project_memory(
-  "// [PROJECT: Member System] [TIMESTAMP: 2025-05-10T16:30:00+09:00] [TYPE: Risk Assessment]\n" +
-  "const riskUpdate = {\n" +
-  "  description: \"Concerns about external API stability\",\n" +
-  "  status: \"Resolved\",\n" +
-  "  resolution: \"Fallback mechanism implementation completed\"\n" +
-  "};",
-  run_id="project:member-system:risk:api-stability",
-  metadata={"type": "risk", "priority": "medium"}
-);
-```
-
-## Important Points
-
-- **Standard Metadata**: Always include the project name and timestamp.
-- **Data Format**: Use structured data (JavaScript objects, JSON, YAML).
-- **Context Management**: Use `run_id` hierarchically to maintain information relevance.
-- **Search Efficiency**: Consistent metadata and structure improve search efficiency.
-
-## 4. Implementation Strategy
-
-To implement the above improvements, we recommend the following steps:
-
-1. **Enhance the `add_project_memory` Method**:
-   - Update documentation strings: Improve usage examples and parameter descriptions.
-   - Error handling: Provide more detailed error information.
-   - Response format: Explicitly state the parameters used.
-
-2. **Update Custom Instructions**:
-   - Enrich template examples.
-   - Clarify recommended usage of `run_id` (introduce hierarchical structure).
-   - Standardize metadata schema.
-   - Provide practical usage examples.
-
-These improvements will enhance the usability and efficiency of information management while maintaining compatibility with existing APIs.
-
-## 5. Summary
-
-The proposed improvements provide value in the following ways while maintaining compatibility with existing mem0 MCP server functions:
-
-1. **Enhanced Structured Information Management**: Templates and standardized metadata promote consistent information structure.
-2. **Improved Context Management**: Hierarchical use of `run_id` makes managing related information easier.
-3. **Improved Usability**: Detailed documentation and practical examples reduce the learning curve.
-
-These enhancements will further increase the effectiveness of the mem0 MCP server as a project management tool.
+以上が、追記された改修計画の追加情報です.
