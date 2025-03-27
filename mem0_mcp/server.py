@@ -9,7 +9,7 @@ import json
 import os
 from typing import Sequence, Dict, List, Union, Optional, Any
 
-from mem0ai import MemoryClient
+from mem0 import MemoryClient  # Corrected import name
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
 from mcp.types import Tool, TextContent, ImageContent, EmbeddedResource
@@ -17,14 +17,16 @@ from mcp.shared.exceptions import McpError
 
 # mem0クライアントの初期化関数
 def init_mem0_client() -> MemoryClient:
-    """mem0クライアントの初期化と設定
+    """mem0クライアントの初期化と設定"""
+    import os
+    import sys
     
-    環境変数からAPIキーを取得し、mem0クライアントを初期化します。
-    また、プロジェクト管理用のカスタム指示を設定します。
-    
-    Returns:
-        MemoryClient: 初期化済みのmem0クライアントインスタンス
-    """
+    # APIキーの確認
+    api_key = os.environ.get("MEM0_API_KEY")
+    if not api_key:
+        print("エラー: MEM0_API_KEY環境変数が設定されていません", file=sys.stderr)
+        sys.exit(1)
+        
     client = MemoryClient()
     
     # カスタム指示の設定

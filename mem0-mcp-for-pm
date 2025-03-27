@@ -1,0 +1,23 @@
+#!/bin/bash
+# -*- coding: utf-8 -*-
+
+# スクリプトのディレクトリを取得
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+# 環境変数をチェック
+if [ -z "${MEM0_API_KEY}" ]; then
+    echo "エラー: MEM0_API_KEY環境変数が設定されていません" >&2
+    exit 1
+fi
+
+# デバッグモードの確認
+DEBUG_FLAG=""
+for arg in "$@"; do
+    if [ "$arg" == "--debug" ]; then
+        DEBUG_FLAG="--debug"
+        break
+    fi
+done
+
+# Pythonパスにスクリプトディレクトリを追加して実行
+PYTHONPATH="${SCRIPT_DIR}:${PYTHONPATH}" python3 -m mem0_mcp ${DEBUG_FLAG}
