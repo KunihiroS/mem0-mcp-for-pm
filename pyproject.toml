@@ -3,18 +3,22 @@ requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "simple-mcp"
+name = "mem0-mcp-pm" # Updated package name
 version = "0.1.0"
-description = "A simple MCP server using stdio transport"
+description = "MCP Server for mem0 project management integration" # Updated description
 readme = "README.md"
 requires-python = ">=3.8"
-license = {text = "MIT"}  # 注：将来的には "MIT" の形式が推奨されます
+license = {text = "MIT"}
 authors = [
     {name = "Your Name", email = "your.email@example.com"}
 ]
+dependencies = [ # Added dependencies
+    "mem0ai", # Corrected package name
+    "mcp-sdk" 
+]
 
 [project.scripts]
-simple-mcp = "simple_mcp.__main__:main"
+mem0-mcp-pm = "mem0_mcp_pm:main" # Updated script name and entry point
 
 [tool.setuptools]
 package-dir = {"" = "src"}  # この行を追加

@@ -1,93 +1,3 @@
-# __init__.py
-
-## sample code
-from .server import serve
-
-def main():
-    """MCP Server for mem0 project management - CLI entry point
-    
-    このモジュールは、mem0サービスと統合するMCPサーバーのコマンドラインインターフェースを提供します。
-    uvx/pipxから直接実行可能な設計となっており、環境変数からの設定読み込みに対応しています。
-    """
-    import argparse
-    import asyncio
-    import os
-    import sys
-    
-    # 環境変数の検証
-    api_key = os.environ.get("MEM0_API_KEY")
-    if not api_key:
-        print("エラー: MEM0_API_KEY環境変数が設定されていません", file=sys.stderr)
-        print("MEM0_API_KEYを環境変数として設定してください。例: export MEM0_API_KEY=your_key", file=sys.stderr)
-        sys.exit(1)
-    
-    # コマンドライン引数の処理
-    parser = argparse.ArgumentParser(
-        description="mem0 MCP Server for project management integration"
-    )
-    parser.add_argument(
-        "--debug", 
-        action="store_true", 
-        help="デバッグモードを有効化"
-    )
-    parser.add_argument(
-        "--version", 
-        action="store_true", 
-        help="バージョン情報を表示"
-    )
-    
-    args = parser.parse_args()
-    
-    # バージョン表示
-    if args.version:
-        print("mem0-mcp-for-pm v0.1.0")
-        sys.exit(0)
-    
-    # デバッグモード設定
-    debug_mode = args.debug
-    if debug_mode:
-        print("デバッグモードが有効化されました")
-        # 将来的なロギング設定もここで実施
-    
-    try:
-        # サーバー実行
-        asyncio.run(serve(debug=debug_mode))
-    except KeyboardInterrupt:
-        print("\nユーザーによる中断を検出しました。終了します。")
-        sys.exit(0)
-    except Exception as e:
-        print(f"エラー: {str(e)}", file=sys.stderr)
-        if debug_mode:
-            import traceback
-            traceback.print_exc()
-        sys.exit(1)
-
-if __name__ == "__main__":
-    main()
-
-# __main__.py
-
-## sample code
-"""
-mem0-mcp-for-pm
-
-このモジュールはmem0サービスと統合するMCPサーバーのエントリーポイントです。
-モジュールとして直接実行された場合、メインエントリーポイントを呼び出します。
-
-使用例:
-    python -m mem0_mcp
-    uvx run mem0-mcp-for-pm
-    pipx run mem0-mcp-for-pm
-"""
-
-from mem0_mcp import main
-
-if __name__ == "__main__":
-    main()
-
-# server.py
-
-## sample code
 """
 mem0 MCP Server Core Implementation
 
@@ -99,7 +9,7 @@ import json
 import os
 from typing import Sequence, Dict, List, Union, Optional, Any
 
-from mem0 import MemoryClient  # Corrected import name
+from mem0 import MemoryClient  # Reverted import name
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
 from mcp.types import Tool, TextContent, ImageContent, EmbeddedResource
@@ -426,7 +336,7 @@ async def serve(debug: bool = False) -> None:
         debug: デバッグモードフラグ（デフォルト: False）
     """
     # サーバーとツールの初期化
-    server = Server("mem0-mcp-for-pm")
+    server = Server("mem0_mcp_pm") # Updated server name to match package
     mem0_tools = Mem0Tools()
     
     @server.list_tools()
@@ -624,13 +534,13 @@ async def serve(debug: bool = False) -> None:
             if debug:
                 import traceback
                 traceback.print_exc()
-            raise ValueError(f"Error processing mem0-mcp-for-pm tool call: {error_type} - {error_message}")
+            raise ValueError(f"Error processing mem0_mcp_pm tool call: {error_type} - {error_message}") # Updated server name
     
     try:
         # 標準入出力通信の確立
         options = server.create_initialization_options()
         if debug:
-            print("Starting mem0-mcp-for-pm server using stdio transport")
+            print("Starting mem0_mcp_pm server using stdio transport") # Updated server name
             print("Initialization options:", options)
         
         async with stdio_server() as (read_stream, write_stream):
@@ -644,5 +554,5 @@ async def serve(debug: bool = False) -> None:
         if debug:
             import traceback
             traceback.print_exc()
-        print(f"Error in mem0-mcp-for-pm server: {error_message}", file=os.sys.stderr)
+        print(f"Error in mem0_mcp_pm server: {error_message}", file=os.sys.stderr) # Updated server name
         raise
