@@ -14,7 +14,7 @@ authors = [
 ]
 dependencies = [ # Added dependencies
     "mem0ai", # Corrected package name
-    "mcp" # Corrected MCP SDK package name
+    "mcp[cli]" # Added [cli] extra to install CLI dependencies
 ]
 
 [project.scripts]

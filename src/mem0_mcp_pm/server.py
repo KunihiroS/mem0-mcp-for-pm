@@ -7,6 +7,7 @@ mem0 MCP Server Core Implementation
 
 import json
 import os
+import sys # Import the sys module
 from typing import Sequence, Dict, List, Union, Optional, Any
 
 from mem0 import MemoryClient  # Reverted import name
@@ -20,14 +21,18 @@ def init_mem0_client() -> MemoryClient:
     """mem0クライアントの初期化と設定"""
     import os
     import sys
+    print("DEBUG: Entering init_mem0_client", file=sys.stderr) # DEBUG
     
     # APIキーの確認
     api_key = os.environ.get("MEM0_API_KEY")
     if not api_key:
         print("エラー: MEM0_API_KEY環境変数が設定されていません", file=sys.stderr)
         sys.exit(1)
+    print("DEBUG: MEM0_API_KEY found.", file=sys.stderr) # DEBUG
         
+    print("DEBUG: Initializing MemoryClient...", file=sys.stderr) # DEBUG
     client = MemoryClient()
+    print("DEBUG: MemoryClient initialized.", file=sys.stderr) # DEBUG
     
     # カスタム指示の設定
     custom_instructions = """
@@ -78,7 +83,10 @@ def init_mem0_client() -> MemoryClient:
         "relationships": "array"  // Extracted relationships (e.g., [{"type": "dependsOn", "target": "TaskB"}])
       }
     """
+    print("DEBUG: Updating project with custom instructions...", file=sys.stderr) # DEBUG
     client.update_project(custom_instructions=custom_instructions)
+    print("DEBUG: Custom instructions updated.", file=sys.stderr) # DEBUG
+    print("DEBUG: Exiting init_mem0_client", file=sys.stderr) # DEBUG
     return client
 
 # mem0ツール実装クラス
@@ -335,9 +343,14 @@ async def serve(debug: bool = False) -> None:
     Args:
         debug: デバッグモードフラグ（デフォルト: False）
     """
+    print("DEBUG: Entering serve function", file=sys.stderr) # DEBUG
     # サーバーとツールの初期化
+    print("DEBUG: Initializing Server...", file=sys.stderr) # DEBUG
     server = Server("mem0_mcp_pm") # Updated server name to match package
+    print("DEBUG: Server initialized.", file=sys.stderr) # DEBUG
+    print("DEBUG: Initializing Mem0Tools...", file=sys.stderr) # DEBUG
     mem0_tools = Mem0Tools()
+    print("DEBUG: Mem0Tools initialized.", file=sys.stderr) # DEBUG
     
     @server.list_tools()
     async def list_tools() -> List[Tool]:
@@ -538,12 +551,16 @@ async def serve(debug: bool = False) -> None:
     
     try:
         # 標準入出力通信の確立
+        print("DEBUG: Creating initialization options...", file=sys.stderr) # DEBUG
         options = server.create_initialization_options()
+        print("DEBUG: Initialization options created.", file=sys.stderr) # DEBUG
         if debug:
             print("Starting mem0_mcp_pm server using stdio transport") # Updated server name
             print("Initialization options:", options)
         
+        print("DEBUG: Entering stdio_server context manager...", file=sys.stderr) # DEBUG
         async with stdio_server() as (read_stream, write_stream):
+            print("DEBUG: stdio streams obtained. Calling server.run...", file=sys.stderr) # DEBUG
             await server.run(
                 read_stream,
                 write_stream,
