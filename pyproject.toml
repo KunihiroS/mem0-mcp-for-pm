@@ -1,11 +1,20 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
-name = "mem0-mcp"
+name = "simple-mcp"
 version = "0.1.0"
-description = "Add your description here"
+description = "A simple MCP server using stdio transport"
 readme = "README.md"
-requires-python = ">=3.12"
-dependencies = [
-    "httpx>=0.28.1",
-    "mcp[cli]>=1.3.0",
-    "mem0ai>=0.1.55",
+requires-python = ">=3.8"
+license = {text = "MIT"}  # 注：将来的には "MIT" の形式が推奨されます
+authors = [
+    {name = "Your Name", email = "your.email@example.com"}
 ]
+
+[project.scripts]
+simple-mcp = "simple_mcp.__main__:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}  # この行を追加

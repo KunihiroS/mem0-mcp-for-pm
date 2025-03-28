@@ -1,0 +1,10 @@
+2025-03-28 13:01:31,594 - root - INFO - Simple MCP server started
+2025-03-28 13:02:04,011 - root - INFO - Received request: {'action': 'test'}
+2025-03-28 13:02:04,011 - root - INFO - Sent response: {'status': 'success', 'message': 'Hello from Simple MCP!', 'received': {'action': 'test'}}
+2025-03-28 13:24:24,155 - root - INFO - Simple MCP server started
+2025-03-28 13:24:44,089 - root - INFO - Received request: {'action': 'test'}
+2025-03-28 13:24:44,090 - root - INFO - Sent response: {'status': 'success', 'message': 'Hello from Simple MCP!', 'received': {'action': 'test'}}
+2025-03-28 13:26:55,672 - root - INFO - Simple MCP server started
+2025-03-28 13:27:21,847 - root - INFO - Received request: {'action': 'test'}
+2025-03-28 13:27:21,847 - root - INFO - Sent response: {'status': 'success', 'message': 'Hello from Simple MCP!', 'received': {'action': 'test'}}
+2025-03-28 13:40:28,422 - root - INFO - Simple MCP server started
