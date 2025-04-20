@@ -117,15 +117,15 @@ Returns:
     str: A success message if the project information was added successfully, or an error message if there was an issue.
 """)
 async def add_project_memory(
-    text: str, 
-    run_id: str = None, 
-    metadata: dict = None, 
-    immutable: bool = False, 
-    expiration_date: str = None,
-    custom_categories: dict = None,
-    includes: str = None,
-    excludes: str = None,
-    infer: bool = None
+    text: str = mcp.Param(description="The project information to add to mem0. Use structured format (e.g., JSON, YAML, JavaScript object)."),
+    run_id: Optional[str] = mcp.Param(description="Session identifier for grouping related memories. Format: project:name:category:subcategory"),
+    metadata: Optional[dict] = mcp.Param(description="Additional metadata such as type, priority, tags. Example: {'type': 'task', 'priority': 'high'}"),
+    immutable: bool = mcp.Param(default=False, description="If True, prevents future modifications to this memory."),
+    expiration_date: Optional[str] = mcp.Param(description="Expiration date in YYYY-MM-DD format."),
+    custom_categories: Optional[dict] = mcp.Param(description="Custom categories for organizing project information."),
+    includes: Optional[str] = mcp.Param(description="Specific aspects or preferences to include in the memory."),
+    excludes: Optional[str] = mcp.Param(description="Specific aspects or preferences to exclude from the memory."),
+    infer: Optional[bool] = mcp.Param(description="If True, enables structure inference from the input.")
 ) -> dict:
     """
     Add new project management information to mem0.
@@ -235,9 +235,9 @@ Returns:
     }
 """)
 async def get_all_project_memories(
-    page: int = 1, 
-    page_size: int = 50, 
-    filters: dict = None
+    page: int = mcp.Param(default=1, description="The page number to retrieve."),
+    page_size: int = mcp.Param(default=50, description="The number of items per page."),
+    filters: Optional[dict] = mcp.Param(description="Optional filters to apply to the retrieval query.")
 ) -> Union[List[Dict], Dict]:
     """
     Retrieve all stored project management information for the default user (v2 API).
@@ -304,8 +304,8 @@ Returns:
     }
 """)
 async def search_project_memories(
-    query: str, 
-    filters: dict = None
+    query: str = mcp.Param(description="The search query string to match against stored project memories."),
+    filters: Optional[dict] = mcp.Param(description="Optional filters to narrow down the search results.")
 ) -> List[Dict]:
     """
     Search through stored project management information using semantic search (v2 API).
@@ -382,8 +382,8 @@ Example usage:
     ```
 """)
 async def update_project_memory(
-    memory_id: str, 
-    text: str
+    memory_id: str = mcp.Param(description="The unique identifier of the memory to update."),
+    text: str = mcp.Param(description="The new content to replace the existing memory with.")
 ) -> dict:
     """
     Update an existing project memory with new content.
@@ -449,7 +449,7 @@ Returns:
     str: A success message if the memory was deleted successfully, or an error message if there was an issue.
 """)
 async def delete_project_memory(
-    memory_id: str
+    memory_id: str = mcp.Param(description="The unique identifier of the memory to delete.")
 ) -> dict:
     """
     Delete a specific project memory from mem0.
