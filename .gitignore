@@ -19,3 +19,6 @@ build/
 
 # Lock files
 uv.lock
+
+# PyPI credentials
+.pypirc
