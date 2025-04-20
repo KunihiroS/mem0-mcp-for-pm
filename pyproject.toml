@@ -1,10 +1,10 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "mcp>=1.6.0"]
 build-backend = "hatchling.build"
 
 [project]
 name = "mem0-mcp-for-pm"
-version = "0.2.1"
+version = "0.2.3"
 description = "MCP Server for mem0 project management integration"
 readme = "README.md"
 requires-python = ">=3.12"
