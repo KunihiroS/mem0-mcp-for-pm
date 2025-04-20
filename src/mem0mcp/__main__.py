@@ -1,11 +1,11 @@
 """
-mem0 MCP for Project Management - モジュール実行ポイント
+mem0 MCP for Project Management - Module Entry Point
 
-このモジュールは、'python -m mem0_mcp'として実行された場合のエントリーポイントを提供します。
+This module provides the entry point when executed as 'python -m mem0mcp'.
 """
 
 from .server import main as server_main
 
 if __name__ == "__main__":
-    # python -m mem0mcp として実行された場合のエントリーポイント
+    # Entry point when executed as 'python -m mem0mcp'
     exit(server_main())

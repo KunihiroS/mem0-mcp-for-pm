@@ -1,8 +1,8 @@
 """
 mem0 MCP for Project Management - Main Package
 
-このパッケージは、mem0サービスとMCP Hostを連携するためのサーバーを提供します。
-プロジェクト管理情報の保存、検索、更新などの機能を実装しています。
+This package provides a server to integrate the mem0 service with an MCP Host.
+It implements features for storing, searching, and updating project management information.
 """
 
 import sys
@@ -10,6 +10,6 @@ from .server import main as server_main
 
 def main():
     """
-    エントリーポイント関数 - pipx/uvx経由で実行される
+    Entry point function - used when executed via pipx/uvx
     """
     return server_main()
