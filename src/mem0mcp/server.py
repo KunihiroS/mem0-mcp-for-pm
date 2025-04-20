@@ -67,7 +67,7 @@ Interpret and Extract Project Management Information:
 """
 mem0_client.update_project(custom_instructions=CUSTOM_INSTRUCTIONS)
 
-mcp = FastMCP("mem0-mcp")
+mcp = FastMCP("mem0-mcp", log_level="ERROR")
 
 @mcp.tool(description="""
 Add new project management information to mem0.
@@ -540,10 +540,10 @@ async def delete_all_project_memories(
 
 def main():
     """
-    Entry point for the MCP server.
+    Main entry point for the mem0 MCP server.
     """
-    import asyncio
-    asyncio.run(mcp.run())
+    mcp.run()
+    return 0
 
 if __name__ == "__main__":
     main()
