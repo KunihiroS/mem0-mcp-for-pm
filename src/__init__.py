@@ -6,15 +6,10 @@ mem0 MCP for Project Management - Main Package
 """
 
 import sys
-import asyncio
-from .server import serve
+from .server import main
 
 def main():
     """
     エントリーポイント関数 - pipx/uvx経由で実行される
-    コマンドライン引数を解析し、サーバーを起動します
     """
-    debug = "--debug" in sys.argv
-    asyncio.run(serve(debug=debug))
-    
-    return 0  # 正常終了
+    return main()
