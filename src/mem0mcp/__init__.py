@@ -6,10 +6,10 @@ mem0 MCP for Project Management - Main Package
 """
 
 import sys
-from .server import main
+from .server import main as server_main
 
 def main():
     """
     エントリーポイント関数 - pipx/uvx経由で実行される
     """
-    return main()
+    return server_main()
