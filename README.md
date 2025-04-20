@@ -2,77 +2,347 @@
 
 **Version: 0.2.0**
 
-mem0 MCP Server acts as a bridge between MCP Host applications and the mem0 cloud service, providing advanced project management memory capabilities for MCP Host AI.
+mem0 MCP Server bridges MCP Host applications and the mem0 cloud service, enabling structured project memory management and semantic search for project-related information.
 
-This fork is focused on project management use cases, supporting structured project data, semantic search, and robust integration with the mem0 API.
+---
 
-Key features:
+## Release Notes
+
+### v0.2.0
+
+- Switched from SSE-based to stdio-based invocation for better compatibility with MCP Hosts
+- Added support for pipx-based installation and execution
+- Simplified deployment via `pyproject.toml` script entrypoint
+
+---
+
+## Features
+
 - Project memory storage and retrieval
-- Semantic search for relevant project information
+- Semantic search for project information
 - Structured project management data handling
-- Fully tested stdio MCP Server tools
-- Flexible logging: default to stderr, file output with `--logfile`
+- Fully tested stdio-based MCP Server tools
+- Flexible logging: stderr by default, file output via `--logfile`
+- Smart CLI invocation via pipx-compatible interface
 
-## Installation
+---
 
-### Requirements
+## MCP Host Configuration
 
-- Python 3.12 or newer
-- mem0 API key (set as environment variable MEM0_API_KEY)
-- (Optional) mcp-proxy for Cline/Roo integration
+Example configuration for MCP Host:
 
-### pipx (recommended)
-```bash
-pipx install .
-```
-To upgrade:
-```bash
-pipx uninstall mem0-mcp-for-pm
-pipx install .
-```
-
-### uv/venv (alternative)
-```bash
-uv venv --python 3.12
-source .venv/bin/activate
-uv pip install -e .
+```json
+"mem0": {
+  "command": "pipx",
+  "args": ["run", "mem0-mcp-for-pm"],
+  "env": {
+    "MEM0_API_KEY": "{apikey}"
+  }
+}
 ```
 
-## Usage
+---
 
-Start the MCP Server (stdio mode):
-```bash
-mem0-mcp-for-pm
-```
+## Tools
 
-Send a JSON request via stdin:
-```bash
-echo '{"tool": "get_all_project_memories", "arguments": {}}' | mem0-mcp-for-pm
-```
+- `add_project_memory`
+- `get_all_project_memories`
+- `search_project_memories`
+- `update_project_memory`
+- `delete_project_memory`
+- `delete_all_project_memories`
 
-To enable file logging:
-```bash
-echo '{"tool": "get_all_project_memories", "arguments": {}}' | mem0-mcp-for-pm --logfile /tmp/mem0.log
-```
-(Default: logs to stderr only. No log file is created unless --logfile is specified.)
+All tools are available via stdio-based MCP protocol.
 
-## Available Tools
-
-- add_project_memory: Add new project management information
-- get_all_project_memories: Retrieve all stored project information
-- search_project_memories: Search for specific project information
-- update_project_memory: Update existing project information
-- delete_project_memory: Delete a specific project memory
-- delete_all_project_memories: Delete multiple project memories by filter
-
-All tools are fully tested and work in stdio MCP Server mode.
+---
 
 ## Logging
 
-- By default, logs are output to stderr only.
-- To output logs to a file, use the `--logfile` command-line argument.
-- No `.log` file is created unless explicitly specified.
+- Default: stderr
+- Optional: `--logfile /path/to/logfile.log`
+
+---
 
 ## License
 
-See LICENSE file for details.
+See LICENSE file.
+
+## Technical details
+
+The uniqueness of this forked is the structured format between MCP Host and mem0 is expected in coding format like Javascript object.
+Make sure you set the custom instruction to be able to handle better.
+
+## Custom instruction
+
+In order to make mem0 working as fitting to project management purpose, this forked has the following instruction for AI.
+
+### For mem0
+
+- Check the source code.
+
+### For MCP Host
+
+- The following is just sample, find the best by yourself !!
+
+---
+
+# mem0 Guide for Effective Project Memory (Enhanced)
+
+This guide outlines strategies and templates for effectively managing project information using mem0. The aim is to improve searchability and reusability of project data through structured templates and metadata management.
+
+## Information Structure and Templates
+
+mem0 can effectively manage the following types of information. Using structured templates improves searchability and reusability. Note that the templates provided are examples and should be adapted to fit specific project needs.
+
+### 1. Project Status Management
+
+**Template**:
+```javascript
+// [PROJECT: project-name] [TIMESTAMP: yyyy-MM-ddTHH:mm:ss+09:00] [TYPE: Project Status]
+const projectStatus = {
+  overview: {
+    name: "Project Name",      // Required
+    purpose: "Project Purpose", // Required
+    version: "1.2.0",          // Optional
+    phase: "development"       // Optional
+  },
+  progress: {
+    completionLevel: 0.65,    // Completion rate (value between 0 and 1)
+    milestones: [
+      { name: "Planning Phase", status: "completed", date: "2025-02-15" },
+      { name: "Development Phase", status: "in-progress", progress: 0.70 }
+    ]
+  },
+  currentFocus: ["Implementing Feature X", "Optimizing Component Y"],
+  risks: ["Concerns about API stability", "Resource shortage"]
+};
+```
+
+### 2. Task Management
+
+**Template**:
+```javascript
+// [PROJECT: project-name] [TIMESTAMP: yyyy-MM-ddTHH:mm:ss+09:00] [TYPE: Task Management]
+const taskManagement = {
+  highPriority: [
+    {
+      description: "Implement Feature X",     // Required
+      status: "in-progress",                 // Required
+      deadline: "2025-03-15",                // Optional
+      assignee: "Team A",                    // Optional
+      dependencies: "Component Y"            // Optional
+    }
+  ],
+  mediumPriority: [],
+  completedTasks: [
+    {
+      description: "Setup Development Environment",
+      status: "completed"
+    }
+  ]
+};
+```
+
+### 3. Meeting Summary
+
+**Template**:
+```javascript
+// [PROJECT: project-name] [TIMESTAMP: yyyy-MM-ddTHH:mm:ss+09:00] [TYPE: Meeting Summary]
+const meetingMinutes = {
+  title: "Weekly Progress Meeting",
+  date: "2025-03-23",
+  attendees: [
+    { department: "Development", members: ["Sato", "Suzuki"] },
+    { department: "Design", members: ["Tanaka"] }
+  ],
+  topics: ["Progress Report", "Risk Management", "Next Week's Plan"],
+  decisions: [
+    "Approve additional resource allocation",
+    "Delay release date by one week"
+  ],
+  actionItems: [
+    { description: "Procedure for adding resources", assignee: "Sato", dueDate: "2025-03-25" },
+    { description: "Revise test plan", assignee: "Suzuki", dueDate: "2025-03-24" }
+  ]
+};
+```
+
+## Effective Information Management Techniques
+
+### 1. Context Management (run_id)
+
+Using mem0's `run_id` parameter, you can logically group related information. This helps maintain specific conversation flows or project contexts.
+
+**Recommended Format**:
+```
+project:project-name:category:subcategory
+```
+
+**Usage Example**:
+```javascript
+// Managing information related to a specific feature
+add_project_memory(
+  "// [PROJECT: Member System] [TYPE: Technical Specification]\nconst authSpec = {...};",
+  run_id="project:member-system:feature:authentication",
+  metadata={"type": "specification"}
+);
+
+// Adding a task for the same feature
+add_project_memory(
+  "// [PROJECT: Member System] [TYPE: Task Management]\nconst authTasks = {...};",
+  run_id="project:member-system:feature:authentication",
+  metadata={"type": "task"}
+);
+
+// Searching for related information
+search_project_memories("authentication", {
+  "run_id": "project:member-system:feature:authentication"
+});
+```
+
+### 2. Effective Use of Metadata
+
+Using metadata can enhance the searchability of information. We recommend using the following schema:
+```javascript
+{
+  "type": "meeting|task|decision|status|risk", // Type of information
+  "priority": "high|medium|low",               // Priority
+  "tags": ["frontend", "backend", "design"],   // Related tags
+  "status": "pending|in-progress|completed"    // Status
+}
+```
+
+**Usage Example**:
+```javascript
+// Registering a high-priority task
+add_project_memory(
+  "// [PROJECT: Member System] [TYPE: Task Management]\nconst task = {...};",
+  metadata={
+    "type": "task",
+    "priority": "high",
+    "tags": ["frontend", "authentication"]
+  }
+);
+
+// Searching for tasks with a specific tag
+search_project_memories("task", {
+  "metadata": {
+    "tags": ["frontend"]
+  }
+});
+```
+
+### 3. Information Lifecycle Management
+
+Using the `immutable` and `expiration_date` parameters, you can manage the lifecycle of information.
+
+**Usage Example**:
+```javascript
+// Recording an immutable decision
+add_project_memory(
+  "// [PROJECT: Member System] [TYPE: Decision Record]\nconst decision = {...};",
+  immutable=True,  // Set as immutable
+  metadata={"type": "decision"}
+);
+
+// Information with an expiration date
+add_project_memory(
+  "// [PROJECT: Member System] [TYPE: Meeting Summary]\nconst meeting = {...};",
+  expiration_date="2025-06-30",  // Expires on this date
+  metadata={"type": "meeting"}
+);
+```
+
+## Practical Usage Patterns
+
+### 1. Sprint Management Example
+```javascript
+// Registering the sprint plan at the start
+add_project_memory(
+  "// [PROJECT: Member System] [TIMESTAMP: 2025-05-01T10:00:00+09:00] [TYPE: Project Status]\n" +
+  "const sprintPlan = {\n" +
+  "  sprint: \"Sprint-2025-05\",\n" +
+  "  duration: \"2 weeks\",\n" +
+  "  goals: [\"Implement authentication feature\", \"Improve UI\"],\n" +
+  "  tasks: [\n" +
+  "    { description: \"Implement login screen\", assignee: \"Tanaka\", estimate: \"3 days\" },\n" +
+  "    { description: \"API integration\", assignee: \"Sato\", estimate: \"2 days\" }\n" +
+  "  ]\n" +
+  "};",
+  run_id="project:member-system:sprint:2025-05",
+  metadata={"type": "status", "tags": ["sprint-planning"]}
+);
+
+// Mid-sprint progress report
+add_project_memory(
+  "// [PROJECT: Member System] [TIMESTAMP: 2025-05-08T15:00:00+09:00] [TYPE: Project Status]\n" +
+  "const progress = {\n" +
+  "  sprint: \"Sprint-2025-05\",\n" +
+  "  completionLevel: 0.4,\n" +
+  "  status: [\n" +
+  "    { task: \"Implement login screen\", progress: 0.7, status: \"in-progress\" },\n" +
+  "    { task: \"API integration\", progress: 0.2, status: \"in-progress\" }\n" +
+  "  ],\n" +
+  "  blockers: [\"Change in API response specification\"]\n" +
+  "};",
+  run_id="project:member-system:sprint:2025-05",
+  metadata={"type": "status", "tags": ["sprint-progress"]}
+);
+```
+
+### 2. Risk Management Example
+```javascript
+// Registering a risk
+add_project_memory(
+  "// [PROJECT: Member System] [TIMESTAMP: 2025-05-03T11:00:00+09:00] [TYPE: Risk Assessment]\n" +
+  "const risk = {\n" +
+  "  description: \"Concerns about external API stability\",\n" +
+  "  impact: \"High\",\n" +
+  "  probability: \"Medium\",\n" +
+  "  mitigation: \"Implement fallback mechanism\",\n" +
+  "  owner: \"Development Lead\"\n" +
+  "};",
+  run_id="project:member-system:risk:api-stability",
+  metadata={"type": "risk", "priority": "high"}
+);
+
+// Updating the risk status
+add_project_memory(
+  "// [PROJECT: Member System] [TIMESTAMP: 2025-05-10T16:30:00+09:00] [TYPE: Risk Assessment]\n" +
+  "const riskUpdate = {\n" +
+  "  description: \"Concerns about external API stability\",\n" +
+  "  status: \"Resolved\",\n" +
+  "  resolution: \"Fallback mechanism implementation completed\"\n" +
+  "};",
+  run_id="project:member-system:risk:api-stability",
+  metadata={"type": "risk", "priority": "medium"}
+);
+```
+
+## Important Points
+
+- **Standard Metadata**: Always include the project name and timestamp.
+- **Data Format**: Use structured data (JavaScript objects, JSON, YAML).
+- **Context Management**: Use `run_id` hierarchically to maintain information relevance.
+- **Search Efficiency**: Consistent metadata and structure improve search efficiency.
+
+## 4. Implementation Strategy
+
+To implement the above improvements, we recommend the following steps:
+
+1. **Enhance the `add_project_memory` Method**:
+   - Update documentation strings: Improve usage examples and parameter descriptions.
+   - Error handling: Provide more detailed error information.
+   - Response format: Explicitly state the parameters used.
+
+2. **Update Custom Instructions**:
+   - Enrich template examples.
+   - Clarify recommended usage of `run_id` (introduce hierarchical structure).
+   - Standardize metadata schema.
+   - Provide practical usage examples.
+
+These improvements will enhance the usability and efficiency of information management while maintaining compatibility with existing APIs.
+
+## 5. Summary
+
+The proposed improvements provide value in the following ways while maintaining compatibility with existing mem0 MCP server functions:

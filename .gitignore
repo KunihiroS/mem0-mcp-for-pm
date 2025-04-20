@@ -8,3 +8,14 @@ __pycache__/
 
 # Egg info
 mem0_mcp.egg-info/
+
+# Build artifacts
+dist/
+build/
+*.egg
+
+# Virtual environments
+.venv/
+
+# Lock files
+uv.lock
