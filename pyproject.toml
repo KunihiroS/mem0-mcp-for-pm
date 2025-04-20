@@ -32,7 +32,7 @@ classifiers = [
 "Bug Tracker" = "https://github.com/KunihiroS/mem0-mcp-for-pm/issues"
 
 [project.scripts]
-mem0-mcp-for-pm = "mem0mcp.server:main"
+mem0-mcp-for-pm = "mem0mcp:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/mem0mcp"]
