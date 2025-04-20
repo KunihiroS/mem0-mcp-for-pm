@@ -336,12 +336,19 @@ def main():
     """
     import sys
     import logging
+    import argparse
     mem0_tools = Mem0Tools()
+    parser = argparse.ArgumentParser(description='mem0 MCP Server')
+    parser.add_argument('--logfile', type=str, help='ログファイル出力先（省略時はstderrのみ）')
+    args = parser.parse_args()
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asctime)s - %(levelname)s - %(message)s',
-        filename='mem0-mcp-stdio.log'
+        format='%(asctime)s - %(levelname)s - %(message)s'
     )
+    if args.logfile:
+        file_handler = logging.FileHandler(args.logfile)
+        file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+        logging.getLogger().addHandler(file_handler)
     print("mem0-mcp stdio server is running. Send JSON requests via stdin.", file=sys.stderr)
     for line in sys.stdin:
         try:
