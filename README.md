@@ -94,10 +94,27 @@ https://github.com/sparfenyuk/mcp-proxy
     }
 ```
 
-11. Launch MCP Server (activated virtual env required)
+11. Launch MCP Server (pipx, uvx, または仮想環境から実行可能)
 
 ```bash
-python main.py --host 127.0.0.1 --port 6789
+# pipx経由でインストール＆実行
+pipx install .
+mem0-mcp-for-pm
+
+# もしくはuvx経由
+uvx install .
+uvx run mem0-mcp-for-pm
+
+# もしくはvenv/uv経由
+uv venv --python 3.12
+source .venv/bin/activate
+pip install -e .
+mem0-mcp-for-pm
+```
+
+標準入力でJSONリクエストを送る例:
+```bash
+echo '{"tool": "get_all_project_memories", "arguments": {}}' | mem0-mcp-for-pm
 ```
 
 12. Check the functionality by MCP Host (like Cline)

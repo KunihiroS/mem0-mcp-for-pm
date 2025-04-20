@@ -556,3 +556,42 @@ async def serve(debug: bool = False) -> None:
             traceback.print_exc()
         print(f"Error in mem0-mcp-for-pm server: {error_message}", file=os.sys.stderr)
         raise
+
+# --- stdioサーバーモードの追加 ---
+def main():
+    """
+    標準入出力ベースのmem0 MCPサーバー（最小構成）。
+    1行ごとにJSONリクエストを受け取り、Mem0Tools経由でツールを呼び出し、JSONレスポンスを返す。
+    リクエスト例: {"tool": "add_project_memory", "arguments": {...}}
+    """
+    import sys
+    import logging
+    mem0_tools = Mem0Tools()
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        filename='mem0-mcp-stdio.log'
+    )
+    print("mem0-mcp stdio server is running. Send JSON requests via stdin.", file=sys.stderr)
+    for line in sys.stdin:
+        try:
+            req = json.loads(line)
+            tool = req.get("tool")
+            arguments = req.get("arguments", {})
+            if not tool:
+                raise ValueError("toolフィールドが必要です")
+            # Mem0Toolsのメソッドにディスパッチ
+            if not hasattr(mem0_tools, tool):
+                raise ValueError(f"未対応のツール: {tool}")
+            method = getattr(mem0_tools, tool)
+            result = method(**arguments)
+            resp = {"status": "success", "result": result}
+            print(json.dumps(resp, ensure_ascii=False), flush=True)
+            logging.info(f"tool={tool} arguments={arguments} result={result}")
+        except Exception as e:
+            err = {"status": "error", "error": str(e)}
+            print(json.dumps(err, ensure_ascii=False), flush=True)
+            logging.error(f"error: {e}")
+
+if __name__ == "__main__":
+    main()
