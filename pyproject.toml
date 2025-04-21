@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "mem0-mcp-for-pm"
-version = "0.2.3"
+version = "0.2.4"
 description = "MCP Server for mem0 project management integration"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -32,7 +32,10 @@ classifiers = [
 "Bug Tracker" = "https://github.com/KunihiroS/mem0-mcp-for-pm/issues"
 
 [project.scripts]
-mem0-mcp-for-pm = "mem0mcp:main"
+mem0-mcp-for-pm = "mem0mcp.__main__:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/mem0mcp"]
+
+[tool.mcp]
+entrypoint = "mem0mcp.__main__:main"
