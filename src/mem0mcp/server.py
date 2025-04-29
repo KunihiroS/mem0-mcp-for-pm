@@ -17,29 +17,39 @@ logger.setLevel(logging.DEBUG)
 logger.handlers.clear()
 logger.propagate = False
 
-# ワークスペースルートを正しく指定
-project_root = Path(__file__).parent.parent.parent.resolve()
-os.makedirs(project_root, exist_ok=True)
-log_path = project_root / ".mcp_server.log"
-
-print(f"[MCP DEBUG] __file__={__file__}")
-print(f"[MCP DEBUG] log_path={log_path}")
-print(f"[MCP DEBUG] cwd={os.getcwd()}")
-
-try:
-    file_handler = logging.FileHandler(str(log_path), mode="a", encoding="utf-8")
-    file_handler.setLevel(logging.DEBUG)
-    formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
-    file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
-    # --- ルートロガーにも FileHandler を追加して全ログを捕捉 ---
-    root_logger = logging.getLogger()
-    root_logger.handlers.clear()
-    root_logger.setLevel(logging.DEBUG)
-    root_logger.addHandler(file_handler)
-    logger.debug("=== MCP Server ログ初期化: DEBUGレベル ===")
-except Exception as e:
-    print(f"ログファイル作成失敗: {log_path} error={e}")
+def setup_logging(log: str, logfile: str):
+    if log == "on":
+        if not logfile or not logfile.startswith("/"):
+            print("[FATAL] --logfile must be an absolute path when --log=on", file=sys.stderr)
+            sys.exit(1)
+        log_dir = os.path.dirname(logfile)
+        if not os.path.exists(log_dir):
+            try:
+                os.makedirs(log_dir, exist_ok=True)
+            except Exception as e:
+                print(f"[FATAL] Failed to create log directory: {log_dir} error={e}", file=sys.stderr)
+                sys.exit(1)
+        try:
+            file_handler = logging.FileHandler(logfile, mode="a", encoding="utf-8")
+            file_handler.setLevel(logging.DEBUG)
+            formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
+            file_handler.setFormatter(formatter)
+            logger.addHandler(file_handler)
+            # --- ルートロガーにも FileHandler を追加して全ログを捕捉 ---
+            root_logger = logging.getLogger()
+            root_logger.handlers.clear()
+            root_logger.setLevel(logging.DEBUG)
+            root_logger.addHandler(file_handler)
+            logger.debug(f"=== MCP Server log initialized: {logfile} ===")
+        except Exception as e:
+            print(f"[FATAL] Failed to create log file: {logfile} error={e}", file=sys.stderr)
+            sys.exit(1)
+    elif log == "off":
+        # ログ機能完全無効化
+        logging.disable(logging.CRITICAL)
+    else:
+        print("[FATAL] --log must be 'on' or 'off'", file=sys.stderr)
+        sys.exit(1)
 
 settings = {
     "APP_NAME": "mem0-mcp-for-pm",
@@ -497,7 +507,8 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[types.TextCont
         logger.exception(f"call_tool error: name={name}, args={arguments}")
         return [types.TextContent(type="text", text=f"Error: {str(e)}")]
 
-async def main():
+async def main(log: str = None, logfile: str = None):
+    setup_logging(log, logfile)
     try:
         async with stdio_server() as streams:
             await server.run(
