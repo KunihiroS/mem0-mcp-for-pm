@@ -35,7 +35,7 @@ def setup_logging(log: str, logfile: str):
             formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
             file_handler.setFormatter(formatter)
             logger.addHandler(file_handler)
-            # --- ルートロガーにも FileHandler を追加して全ログを捕捉 ---
+            # --- Also add FileHandler to the root logger to capture all logs ---
             root_logger = logging.getLogger()
             root_logger.handlers.clear()
             root_logger.setLevel(logging.DEBUG)
@@ -45,7 +45,7 @@ def setup_logging(log: str, logfile: str):
             print(f"[FATAL] Failed to create log file: {logfile} error={e}", file=sys.stderr)
             sys.exit(1)
     elif log == "off":
-        # ログ機能完全無効化
+        # Completely disable logging functionality
         logging.disable(logging.CRITICAL)
     else:
         print("[FATAL] --log must be 'on' or 'off'", file=sys.stderr)
@@ -53,7 +53,7 @@ def setup_logging(log: str, logfile: str):
 
 settings = {
     "APP_NAME": "mem0-mcp-for-pm",
-    "APP_VERSION": "0.2.4"
+    "APP_VERSION": "0.3.0"
 }
 
 server = Server(settings["APP_NAME"])
@@ -400,7 +400,7 @@ delete_all_project_memories_tool = types.Tool(
     }
 )
 
-# --- グローバル例外フック追加 ---
+# --- Add global exception hook ---
 def log_unhandled_exception(exc_type, exc_value, exc_traceback):
     if issubclass(exc_type, KeyboardInterrupt):
         sys.__excepthook__(exc_type, exc_value, exc_traceback)
@@ -408,9 +408,9 @@ def log_unhandled_exception(exc_type, exc_value, exc_traceback):
     logger.critical("Unhandled exception", exc_info=(exc_type, exc_value, exc_traceback))
 
 sys.excepthook = log_unhandled_exception
-# --- ここまで ---
+# --- End of global exception hook ---
 
-# --- asyncioイベントループ例外ハンドラ追加 ---
+# --- Add asyncio event loop exception handler ---
 def handle_asyncio_exception(loop, context):
     logger.critical(f"Asyncio unhandled exception: {context.get('message')}", exc_info=context.get('exception'))
 
@@ -419,7 +419,7 @@ try:
     loop.set_exception_handler(handle_asyncio_exception)
 except Exception as e:
     logger.error(f"Failed to set asyncio exception handler: {e}")
-# --- ここまで ---
+# --- End of asyncio event loop exception handler ---
 
 @server.list_tools()
 async def list_tools() -> List[types.Tool]:
@@ -434,9 +434,9 @@ async def list_tools() -> List[types.Tool]:
 
 @server.call_tool()
 async def call_tool(name: str, arguments: Dict[str, Any]) -> List[types.TextContent]:
-    # ツール呼び出し開始ログ
-    logger.info(f"★★ call_tool invoked: name={name}, args={arguments}")
-    # ログを即時フラッシュ
+    # Log tool invocation
+    logger.info(f"Tool invoked: name={name}, args={arguments}")
+    # Flush logs immediately
     for h in logger.handlers:
         try:
             h.flush()
@@ -462,7 +462,7 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[types.TextCont
 
         elif name == "get_all_project_memories":
             params = {k: v for k, v in arguments.items() if v is not None}
-            # フィルタ必須項目がない場合、デフォルトで user_id を付与
+            # Add default user_id if no filter is specified
             if not any(k in params for k in ["run_id", "user_id", "agent_id", "app_id"]):
                 params["user_id"] = DEFAULT_USER_ID
             result = mem0_client.get_all(**params)
@@ -470,12 +470,12 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[types.TextCont
 
         elif name == "search_project_memories":
             params = {k: v for k, v in arguments.items() if v is not None}
-            # get_all_project_memories_toolの設計に合わせてfiltersラップ処理を追加
+            # Wrap filters for get_all_project_memories_tool
             if "filters" not in params and any(k in params for k in ["category", "project", "created_at__gte", "created_at__lte", "tags", "owner"]):
-                # 単純なフィルタ指定が直で来た場合はfiltersにまとめる
+                # If simple filters are specified, wrap them in filters
                 filter_keys = ["category", "project", "created_at__gte", "created_at__lte", "tags", "owner"]
                 params["filters"] = {k: params.pop(k) for k in filter_keys if k in params}
-            # デフォルトuser_id付与
+            # Add default user_id
             if not any(k in params for k in ["run_id", "user_id", "agent_id", "app_id"]):
                 params["user_id"] = DEFAULT_USER_ID
             result = mem0_client.search(**params)
@@ -483,7 +483,7 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[types.TextCont
 
         elif name == "update_project_memory":
             params = {k: v for k, v in arguments.items() if v is not None}
-            # mem0公式仕様: text→dataに変換
+            # Convert text to data according to mem0 official specification
             if "text" in params:
                 params["data"] = params.pop("text")
             mem0_client.update(**params)
@@ -502,9 +502,9 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[types.TextCont
         else:
             return [types.TextContent(type="text", text=f"Unknown tool: {name}")]
 
-        logger.info(f"call_tool finished: name={name}")
+        logger.info(f"Tool finished: name={name}")
     except Exception as e:
-        logger.exception(f"call_tool error: name={name}, args={arguments}")
+        logger.exception(f"Tool error: name={name}, args={arguments}")
         return [types.TextContent(type="text", text=f"Error: {str(e)}")]
 
 async def main(log: str = None, logfile: str = None):

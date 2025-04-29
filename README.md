@@ -10,7 +10,8 @@ mem0 MCP Server bridges MCP Host applications and the mem0 cloud service, enabli
 
 ### v0.3.0
 
-- Change from JavaScript object-based templates to TOML-based templates and guide
+- Change from JavaScript object-based templates to TOML-based templates and guide, which is more efficient for data extraction by mem0 cloud service.
+- Added logging functionality (check MCP Host Configuration section for details).
 
 ### v0.2.0
 
