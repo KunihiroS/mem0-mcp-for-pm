@@ -33,17 +33,39 @@ mem0 MCP Server bridges MCP Host applications and the mem0 cloud service, enabli
 
 ## MCP Host Configuration
 
-Example configuration for MCP Host:
+When running this MCP Server, you **must explicitly specify the log output mode and (if enabled) the absolute log file path via command-line arguments**.
 
+- `--log=off` : Disable all logging (no logs are written)
+- `--log=on --logfile=/absolute/path/to/logfile.log` : Enable logging and write logs to the specified absolute file path
+- Both arguments are **required** when logging is enabled. The server will exit with an error if either is missing, the path is not absolute, or if invalid values are given.
+
+### Example: Logging Disabled
 ```json
 "mem0": {
   "command": "pipx",
-  "args": ["run", "mem0-mcp-for-pm"],
+  "args": ["run", "mem0-mcp-for-pm", "--log=off"],
   "env": {
     "MEM0_API_KEY": "{apikey}"
   }
 }
 ```
+
+### Example: Logging Enabled (absolute log file path required)
+```json
+"mem0": {
+  "command": "pipx",
+  "args": ["run", "mem0-mcp-for-pm", "--log=on", "--logfile=/workspace/logs/mem0-mcp-server.log"],
+  "env": {
+    "MEM0_API_KEY": "{apikey}"
+  }
+}
+```
+
+> **Note:**
+> - When logging is enabled, logs are written **only** to the specified absolute file path. Relative paths or omission of `--logfile` will cause an error.
+> - When logging is disabled, no logs are output.
+> - If the required arguments are missing or invalid, the server will not start and will print an error message.
+> - The log file must be accessible and writable by the MCP Server process.
 
 ---
 
