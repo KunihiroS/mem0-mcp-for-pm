@@ -22,3 +22,6 @@ uv.lock
 
 # PyPI credentials
 .pypirc
+
+# MCP server logs
+.mcp_server.log

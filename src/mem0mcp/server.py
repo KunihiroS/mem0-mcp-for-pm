@@ -1,4 +1,5 @@
 import logging
+import json
 from typing import Dict, Any, List, Union
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
@@ -6,9 +7,39 @@ from mcp.server.models import InitializationOptions
 from mcp.server import NotificationOptions
 import mcp.types as types
 from mem0 import MemoryClient
+import os
+from pathlib import Path
+import sys
+import asyncio
 
 logger = logging.getLogger("mem0-mcp-server")
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.DEBUG)
+logger.handlers.clear()
+logger.propagate = False
+
+# ワークスペースルートを正しく指定
+project_root = Path(__file__).parent.parent.parent.resolve()
+os.makedirs(project_root, exist_ok=True)
+log_path = project_root / ".mcp_server.log"
+
+print(f"[MCP DEBUG] __file__={__file__}")
+print(f"[MCP DEBUG] log_path={log_path}")
+print(f"[MCP DEBUG] cwd={os.getcwd()}")
+
+try:
+    file_handler = logging.FileHandler(str(log_path), mode="a", encoding="utf-8")
+    file_handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+    # --- ルートロガーにも FileHandler を追加して全ログを捕捉 ---
+    root_logger = logging.getLogger()
+    root_logger.handlers.clear()
+    root_logger.setLevel(logging.DEBUG)
+    root_logger.addHandler(file_handler)
+    logger.debug("=== MCP Server ログ初期化: DEBUGレベル ===")
+except Exception as e:
+    print(f"ログファイル作成失敗: {log_path} error={e}")
 
 settings = {
     "APP_NAME": "mem0-mcp-for-pm",
@@ -309,6 +340,27 @@ delete_all_project_memories_tool = types.Tool(
     }
 )
 
+# --- グローバル例外フック追加 ---
+def log_unhandled_exception(exc_type, exc_value, exc_traceback):
+    if issubclass(exc_type, KeyboardInterrupt):
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+    logger.critical("Unhandled exception", exc_info=(exc_type, exc_value, exc_traceback))
+
+sys.excepthook = log_unhandled_exception
+# --- ここまで ---
+
+# --- asyncioイベントループ例外ハンドラ追加 ---
+def handle_asyncio_exception(loop, context):
+    logger.critical(f"Asyncio unhandled exception: {context.get('message')}", exc_info=context.get('exception'))
+
+try:
+    loop = asyncio.get_event_loop()
+    loop.set_exception_handler(handle_asyncio_exception)
+except Exception as e:
+    logger.error(f"Failed to set asyncio exception handler: {e}")
+# --- ここまで ---
+
 @server.list_tools()
 async def list_tools() -> List[types.Tool]:
     return [
@@ -322,6 +374,14 @@ async def list_tools() -> List[types.Tool]:
 
 @server.call_tool()
 async def call_tool(name: str, arguments: Dict[str, Any]) -> List[types.TextContent]:
+    # ツール呼び出し開始ログ
+    logger.info(f"★★ call_tool invoked: name={name}, args={arguments}")
+    # ログを即時フラッシュ
+    for h in logger.handlers:
+        try:
+            h.flush()
+        except Exception:
+            pass
     try:
         if name == "add_project_memory":
             messages = [{"role": "user", "content": arguments["text"]}]
@@ -335,37 +395,33 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[types.TextCont
                 "run_id", "metadata", "immutable", "expiration_date",
                 "custom_categories", "includes", "excludes", "infer"
             ]:
-                if key in arguments and arguments[key] is not None:
+                if key in arguments:
                     api_params[key] = arguments[key]
-            result = mem0_client.add(**api_params)
-            return [types.TextContent(type="json", text=result)]
+            mem0_client.add(**api_params)
+            return [types.TextContent(type="text", text="Successfully added project memory")]
 
         elif name == "get_all_project_memories":
-            result = mem0_client.get_all(
-                user_id=DEFAULT_USER_ID,
-                page=arguments.get("page", 1),
-                page_size=arguments.get("page_size", 50),
-                version="v2",
-                filters=arguments.get("filters")
-            )
-            return [types.TextContent(type="json", text=result)]
+            params = {k: v for k, v in arguments.items() if v is not None}
+            # フィルタ必須項目がない場合、デフォルトで user_id を付与
+            if not any(k in params for k in ["run_id", "user_id", "agent_id", "app_id"]):
+                params["user_id"] = DEFAULT_USER_ID
+            result = mem0_client.get_all(**params)
+            return [types.TextContent(type="text", text=json.dumps(result, ensure_ascii=False, indent=2))]
 
         elif name == "search_project_memories":
-            result = mem0_client.search(
-                arguments["query"],
-                user_id=DEFAULT_USER_ID,
-                version="v2",
-                filters=arguments.get("filters")
-            )
-            return [types.TextContent(type="json", text=result)]
+            params = {k: v for k, v in arguments.items() if v is not None}
+            result = mem0_client.search(**params)
+            return [types.TextContent(type="text", text=json.dumps(result, ensure_ascii=False, indent=2))]
 
         elif name == "update_project_memory":
-            result = mem0_client.update(arguments["memory_id"], arguments["text"])
-            return [types.TextContent(type="json", text=result)]
+            params = {k: v for k, v in arguments.items() if v is not None}
+            mem0_client.update(**params)
+            return [types.TextContent(type="text", text="Successfully updated project memory")]
 
         elif name == "delete_project_memory":
-            mem0_client.delete(memory_id=arguments["memory_id"])
-            return [types.TextContent(type="text", text="Successfully deleted")]
+            params = {k: v for k, v in arguments.items() if v is not None}
+            mem0_client.delete(**params)
+            return [types.TextContent(type="text", text="Successfully deleted project memory")]
 
         elif name == "delete_all_project_memories":
             filter_params = {k: v for k, v in arguments.items() if v is not None}
@@ -375,20 +431,26 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[types.TextCont
         else:
             return [types.TextContent(type="text", text=f"Unknown tool: {name}")]
 
+        logger.info(f"call_tool finished: name={name}")
     except Exception as e:
+        logger.exception(f"call_tool error: name={name}, args={arguments}")
         return [types.TextContent(type="text", text=f"Error: {str(e)}")]
 
 async def main():
-    async with stdio_server() as streams:
-        await server.run(
-            streams[0],
-            streams[1],
-            InitializationOptions(
-                server_name=settings["APP_NAME"],
-                server_version=settings["APP_VERSION"],
-                capabilities=server.get_capabilities(
-                    notification_options=NotificationOptions(resources_changed=True),
-                    experimental_capabilities={},
+    try:
+        async with stdio_server() as streams:
+            await server.run(
+                streams[0],
+                streams[1],
+                InitializationOptions(
+                    server_name=settings["APP_NAME"],
+                    server_version=settings["APP_VERSION"],
+                    capabilities=server.get_capabilities(
+                        notification_options=NotificationOptions(resources_changed=True),
+                        experimental_capabilities={},
+                    ),
                 ),
-            ),
-        )
+            )
+    except Exception:
+        logger.exception("Fatal error in server.run", exc_info=True)
+        raise
