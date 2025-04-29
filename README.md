@@ -10,6 +10,7 @@ mem0 MCP Server bridges MCP Host applications and the mem0 cloud service, enabli
 
 ### v0.3.0
 
+- Fix: as mem0 cloud service has changed the way of handling data, the way of handling data has been changed.
 - Change from JavaScript object-based templates to TOML-based templates and guide, which is more efficient for data extraction by mem0 cloud service.
 - Added logging functionality (check MCP Host Configuration section for details).
 
