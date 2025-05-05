@@ -134,10 +134,12 @@ add_project_memory_tool = types.Tool(
     using the **TOML** data format, and must include project name and timestamp as metadata.
 
     Args:
-        text: The project information to add to mem0, as a string in TOML format.
+        messages: A list of message objects containing the project information.
+            The content within the messages should ideally be TOML formatted.
             - Use the provided category templates as a basis.
             - Include all relevant fields and metadata (e.g., project name, timestamp) as TOML keys.
         run_id: (Optional) Session identifier for organizing related memories into logical groups.
+
             Recommended format: "project:name:category:subcategory"
             Example: "project:member-webpage:sprint:2025-q2-sprint3"
         metadata: (Optional) Additional structured information about this memory.
@@ -179,9 +181,18 @@ add_project_memory_tool = types.Tool(
     inputSchema={
         "type": "object",
         "properties": {
-            "text": {
-                "type": "string",
-                "description": "Project information to add, as a TOML-formatted string. Use the recommended category templates. Must include project name and timestamp. Example: see tool description."
+
+            "messages": {
+                "type": "array",
+                "description": "A list of message objects (e.g., [{'role': 'user', 'content': 'TOML content...'}]).",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "role": {"type": "string"},
+                        "content": {"type": "string"}
+                    },
+                    "required": ["role", "content"]
+                }
             },
             "run_id": {
                 "type": "string",
@@ -216,7 +227,7 @@ add_project_memory_tool = types.Tool(
                 "description": "If true, enables automatic structure inference from the input. Optional."
             }
         },
-        "required": ["text"]
+        "required": ["messages"]
     }
 )
 
@@ -444,9 +455,8 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[types.TextCont
             pass
     try:
         if name == "add_project_memory":
-            messages = [{"role": "user", "content": arguments["text"]}]
             api_params = {
-                "messages": messages,
+                "messages": arguments["messages"],
                 "user_id": DEFAULT_USER_ID,
                 "output_format": "v1.1",
                 "version": "v2"
@@ -457,6 +467,7 @@ async def call_tool(name: str, arguments: Dict[str, Any]) -> List[types.TextCont
             ]:
                 if key in arguments:
                     api_params[key] = arguments[key]
+            logger.debug(f"Calling mem0_client.add with params: {api_params}")
             mem0_client.add(**api_params)
             return [types.TextContent(type="text", text="Successfully added project memory")]
 
