@@ -1,12 +1,15 @@
 # mem0 MCP Server for Project Management
 
-**Version: 0.3.0**
+**Version: 0.3.1**
 
 mem0 MCP Server bridges MCP Host applications and the mem0 cloud service, enabling structured project memory management and semantic search for project-related information.
 
 ---
 
 ## Release Notes
+
+### v0.3.1
+- Fix: "add project memory" tool to works properly by adjusting message format to mem0 API.
 
 ### v0.3.0
 
