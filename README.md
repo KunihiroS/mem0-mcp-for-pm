@@ -1,6 +1,6 @@
 # mem0 MCP Server for Project Management
 
-**Version: 0.3.1**
+**Version: 0.3.2**
 
 mem0 MCP Server bridges MCP Host applications and the mem0 cloud service, enabling structured project memory management and semantic search for project-related information.
 
@@ -8,8 +8,9 @@ mem0 MCP Server bridges MCP Host applications and the mem0 cloud service, enabli
 
 ## Release Notes
 
-### v0.3.1
+### v0.3.1 and v0.3.2
 - Fix: "add project memory" tool to works properly by adjusting message format to mem0 API.
+- Added version specification to the MCP Host configuration example. (for caching troubleshoot)
 
 ### v0.3.0
 
@@ -71,6 +72,17 @@ When running this MCP Server, you **must explicitly specify the log output mode 
 > - When logging is disabled, no logs are output.
 > - If the required arguments are missing or invalid, the server will not start and will print an error message.
 > - The log file must be accessible and writable by the MCP Server process.
+> - If you have trouble to run this server, it may be due to caching older version of mem0-mcp-for-pm. Please try to run it with the latest version (set `x.y.z` to the latest version) of mem0-mcp-for-pm by the below setting.
+
+```json
+"mem0": {
+  "command": "pipx",
+  "args": ["run", "mem0-mcp-for-pm==x.y.z", "--log=off"],
+  "env": {
+    "MEM0_API_KEY": "{apikey}"
+  }
+}
+```
 
 ---
 
